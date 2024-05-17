@@ -5,6 +5,7 @@ import {ERC1155Pausable} from "@openzeppelin/contracts/token/ERC1155/extensions/
 import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol";
 
 /// @title The Yi Sin EBook store ERC1155 contract
 /// @author Yi-Sin NFT
@@ -17,6 +18,7 @@ contract YiSinEBook is ERC1155, ERC1155Pausable, Ownable, ReentrancyGuard {
         address writer;
         uint256 supplyAmount;
         uint256 rentPrice;
+        uint256 maxRentTime;
     }
     struct RentInfo {
         address renter;
@@ -24,18 +26,38 @@ contract YiSinEBook is ERC1155, ERC1155Pausable, Ownable, ReentrancyGuard {
         uint256 endTime;
     }
     //  All type of books.
-    uint256 public totalSupplyBook;
+    uint256 public totalSupplyBook = 0;
     //  tokenId => bookInfo
     mapping(uint256 => BookInfo) public bookInfos;
     //  tokenId => rentInfo
     mapping(uint256 => RentInfo[]) public rentInfos;
     //  Book renter now, use for rentInfos index. tokenId => renter amount
     mapping(uint256 => uint256) public booksOnRent;
-    mapping(address => uint256) public renterRentInfoIndex;
+    //  renter => bookId => index
+    mapping(address => mapping(uint256 => uint256)) public renterRentInfoIndex;
+    mapping(uint256 => bool) private _isBookBeBurned;
 
     constructor(address initialOwner) ERC1155("") Ownable(initialOwner) {}
 
     // Ebook store function support for depolyer.
+    function uploadEBook(uint256 bookAmount, address uploader, uint256 price, uint256 time) external onlyOwner() {
+        _mint(address(this), totalSupplyBook, bookAmount, "");
+        bookInfos[totalSupplyBook] = BookInfo({
+            writer: uploader,
+            supplyAmount: bookAmount,
+            rentPrice: price,
+            maxRentTime: time
+        });
+        totalSupplyBook++;
+    }
+
+    function burnEBook(uint256 bookId) external onlyOwner() {
+        _burn(address(this), bookId, bookInfos[bookId].supplyAmount);
+        _isBookBeBurned[bookId] = true;
+        delete bookInfos[bookId];
+        delete rentInfos[bookId];
+        //  No need totalSupplyBook--
+    }
 
     /// @dev The following function are provided for borrower.
     /**
@@ -47,7 +69,8 @@ contract YiSinEBook is ERC1155, ERC1155Pausable, Ownable, ReentrancyGuard {
     function rentBook(
         uint256 bookId,
         uint256 rentTime
-    ) public payable nonReentrant {
+    ) external payable nonReentrant {
+        require(!_isBookBeBurned[bookId], "This book is not exist.");
         require(msg.sender != address(0), "Invalid call by address 0");
         require(
             balanceOf(address(this), bookId) > 0,
@@ -56,6 +79,8 @@ contract YiSinEBook is ERC1155, ERC1155Pausable, Ownable, ReentrancyGuard {
         require(balanceOf(msg.sender, bookId) == 0, "Already rented");
         require(isApprovedForAll(msg.sender, address(this)), "Not Approved");
         require(msg.value == bookInfos[bookId].rentPrice, "Invalid price");
+        require(bookId < totalSupplyBook, "Invalid bookId");
+        require(rentTime <= bookInfos[bookId].maxRentTime, "Exceed max rent time.");
 
         rentInfos[bookId].push(
             RentInfo({
@@ -64,28 +89,67 @@ contract YiSinEBook is ERC1155, ERC1155Pausable, Ownable, ReentrancyGuard {
                 endTime: rentTime + block.timestamp
             })
         );
-        renterRentInfoIndex[msg.sender] = booksOnRent[bookId];
+        renterRentInfoIndex[msg.sender][bookId] = booksOnRent[bookId];
         booksOnRent[bookId]++;
         safeTransferFrom(address(this), msg.sender, bookId, 1, "");
     }
 
-    function returnBook(uint256 bookId) public nonReentrant {
+    function returnBook(uint256 bookId) external nonReentrant {
         require(balanceOf(msg.sender, bookId) > 0, "Isn't rented this book");
         require(msg.sender != address(0), "Cannot transfer to address 0");
         require(
-            rentInfos[bookId][renterRentInfoIndex[msg.sender]].renter ==
+            rentInfos[bookId][renterRentInfoIndex[msg.sender][bookId]].renter ==
                 msg.sender,
             "Should be renter"
         );
+        require(bookId < totalSupplyBook, "Invalid bookId");
 
-        rentInfos[bookId][renterRentInfoIndex[msg.sender]] = rentInfos[bookId][
+        transferBook(bookId, msg.sender);
+    }
+
+    //  Chainlink automation return book.
+    function checkUpkeep(
+        bytes calldata checkData
+    )
+        external
+        view
+        returns (bool upkeepNeeded, bytes memory performData)
+    {
+        upkeepNeeded = false;
+        for (uint256 i = 0; i < checkData.length; i += 32) {
+            uint256 tokenId = abi.decode(checkData[i:i + 32], (uint256));
+            /*  condition 1: Reach end time.
+             *  condition 2: The tokenId is not on rent.
+             */
+            for(uint256 index = 0; index < booksOnRent[tokenId]; index++) {
+                if (block.timestamp >= rentInfos[tokenId][index].endTime && rentInfos[tokenId][index].endTime != 0) {
+                    upkeepNeeded = true;
+                    performData = abi.encode(tokenId, index);
+                    break;
+                }
+                if(upkeepNeeded) {
+                    break;
+                }
+            }
+        }
+    }
+    function performUpkeep(bytes calldata performData) external {
+        (uint256 tokenId, uint256 index) = abi.decode(performData, (uint256, uint256));
+        if (block.timestamp > rentInfos[tokenId][index].endTime && rentInfos[tokenId][index].endTime != 0) {
+            transferBook(tokenId, rentInfos[tokenId][index].renter);
+        }
+    }
+
+    function transferBook(uint256 bookId, address renterAddress) private {
+        rentInfos[bookId][renterRentInfoIndex[renterAddress][bookId]] = rentInfos[bookId][
             rentInfos[bookId].length - 1
         ]; //  Move the last rent information to user's index.
         rentInfos[bookId].pop(); //  pop the last rent information.
         renterRentInfoIndex[
-            rentInfos[bookId][renterRentInfoIndex[msg.sender]].renter
-        ] = renterRentInfoIndex[msg.sender]; //  The last user rent information index = user's index
+            rentInfos[bookId][renterRentInfoIndex[renterAddress][bookId]].renter
+        ][bookId] = renterRentInfoIndex[renterAddress][bookId]; //  The last user rent information index = user's index
         booksOnRent[bookId]--;
+        safeTransferFrom(renterAddress, address(this), bookId, 1, "");
     }
 
     /**
