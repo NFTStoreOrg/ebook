@@ -40,7 +40,12 @@ contract YiSinEBook is ERC1155, ERC1155Pausable, Ownable, ReentrancyGuard {
     constructor(address initialOwner) ERC1155("") Ownable(initialOwner) {}
 
     // Ebook store function support for depolyer.
-    function uploadEBook(uint256 bookAmount, address uploader, uint256 price, uint256 time) external onlyOwner() {
+    function uploadEBook(
+        uint256 bookAmount,
+        address uploader,
+        uint256 price,
+        uint256 time
+    ) external onlyOwner {
         _mint(address(this), totalSupplyBook, bookAmount, "");
         bookInfos[totalSupplyBook] = BookInfo({
             writer: uploader,
@@ -51,7 +56,7 @@ contract YiSinEBook is ERC1155, ERC1155Pausable, Ownable, ReentrancyGuard {
         totalSupplyBook++;
     }
 
-    function burnEBook(uint256 bookId) external onlyOwner() {
+    function burnEBook(uint256 bookId) external onlyOwner {
         _burn(address(this), bookId, bookInfos[bookId].supplyAmount);
         _isBookBeBurned[bookId] = true;
         delete bookInfos[bookId];
@@ -80,7 +85,10 @@ contract YiSinEBook is ERC1155, ERC1155Pausable, Ownable, ReentrancyGuard {
         require(isApprovedForAll(msg.sender, address(this)), "Not Approved");
         require(msg.value == bookInfos[bookId].rentPrice, "Invalid price");
         require(bookId < totalSupplyBook, "Invalid bookId");
-        require(rentTime <= bookInfos[bookId].maxRentTime, "Exceed max rent time.");
+        require(
+            rentTime <= bookInfos[bookId].maxRentTime,
+            "Exceed max rent time."
+        );
 
         rentInfos[bookId].push(
             RentInfo({
@@ -110,40 +118,46 @@ contract YiSinEBook is ERC1155, ERC1155Pausable, Ownable, ReentrancyGuard {
     //  Chainlink automation return book.
     function checkUpkeep(
         bytes calldata checkData
-    )
-        external
-        view
-        returns (bool upkeepNeeded, bytes memory performData)
-    {
+    ) external view returns (bool upkeepNeeded, bytes memory performData) {
         upkeepNeeded = false;
         for (uint256 i = 0; i < checkData.length; i += 32) {
             uint256 tokenId = abi.decode(checkData[i:i + 32], (uint256));
             /*  condition 1: Reach end time.
              *  condition 2: The tokenId is not on rent.
              */
-            for(uint256 index = 0; index < booksOnRent[tokenId]; index++) {
-                if (block.timestamp >= rentInfos[tokenId][index].endTime && rentInfos[tokenId][index].endTime != 0) {
+            for (uint256 index = 0; index < booksOnRent[tokenId]; index++) {
+                if (
+                    block.timestamp >= rentInfos[tokenId][index].endTime &&
+                    rentInfos[tokenId][index].endTime != 0
+                ) {
                     upkeepNeeded = true;
                     performData = abi.encode(tokenId, index);
                     break;
                 }
-                if(upkeepNeeded) {
+                if (upkeepNeeded) {
                     break;
                 }
             }
         }
     }
+
     function performUpkeep(bytes calldata performData) external {
-        (uint256 tokenId, uint256 index) = abi.decode(performData, (uint256, uint256));
-        if (block.timestamp > rentInfos[tokenId][index].endTime && rentInfos[tokenId][index].endTime != 0) {
+        (uint256 tokenId, uint256 index) = abi.decode(
+            performData,
+            (uint256, uint256)
+        );
+        if (
+            block.timestamp > rentInfos[tokenId][index].endTime &&
+            rentInfos[tokenId][index].endTime != 0
+        ) {
             transferBook(tokenId, rentInfos[tokenId][index].renter);
         }
     }
 
     function transferBook(uint256 bookId, address renterAddress) private {
-        rentInfos[bookId][renterRentInfoIndex[renterAddress][bookId]] = rentInfos[bookId][
-            rentInfos[bookId].length - 1
-        ]; //  Move the last rent information to user's index.
+        rentInfos[bookId][
+            renterRentInfoIndex[renterAddress][bookId]
+        ] = rentInfos[bookId][rentInfos[bookId].length - 1]; //  Move the last rent information to user's index.
         rentInfos[bookId].pop(); //  pop the last rent information.
         renterRentInfoIndex[
             rentInfos[bookId][renterRentInfoIndex[renterAddress][bookId]].renter
