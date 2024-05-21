@@ -3,13 +3,9 @@ package main
 import (
 	"fmt"
 	"log"
-	"math/big"
 	"net/http"
 
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/gin-gonic/gin"
-	ebook "yisinnft.org/m/v2/contract"
 	"yisinnft.org/m/v2/routers" //	引用routers包調用方法
 )
 
@@ -36,58 +32,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Set trust proxies fail: ", err)
 	}
-
-	//	Initial ethereum node
-	client, err := ethclient.Dial("https://ethereum-sepolia-rpc.publicnode.com")
-	if err != nil {
-		log.Fatal(err)
-	}
-	//	Initial contract
-	address := common.HexToAddress("0x3dE2D4AA4140D053FCbEEFbE0e2f0da1Cb326462")
-	//	Instance is contract
-	instance, err := ebook.NewYiSinEBook(address, client)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println("contract is loaded")
-	_ = instance
-
-	r.GET("/query/totalsupply", func(ctx *gin.Context) {
-		total, _ := instance.TotalSupplyBook(nil)
-		ctx.JSON(http.StatusOK, gin.H{
-			"variety": total,
-		})
-	})
-	r.GET("/query/book/information/:id", func(ctx *gin.Context) {
-		idstr := ctx.Param("id")
-		idBigInt, ok := new(big.Int).SetString(idstr, 10)
-		//	Test id correct
-		if !ok {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
-		}
-		info, _ := instance.BookInfos(nil, idBigInt)
-		//	Return book information
-		ctx.JSON(http.StatusOK, gin.H{
-			"writer":         info.Writer,
-			"supply_amount":  info.SupplyAmount,
-			"price":          info.RentPrice,
-			"max_rent_price": info.MaxRentTime,
-		})
-
-	})
-	r.GET("query/book/onrent/:id", func(ctx *gin.Context) {
-		idstr := ctx.Param("id")
-		idBigInt, ok := new(big.Int).SetString(idstr, 10)
-		//	Test id correct
-		if !ok {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
-		}
-		amount, _ := instance.BooksOnRent(nil, idBigInt)
-		ctx.JSON(http.StatusOK, gin.H{
-			"on_rent_amount": amount,
-		})
-	})
+	
 	//	也可以直接返回結構
 	r.GET("/json/struct", func(ctx *gin.Context) {
 		a := &Article{
@@ -160,8 +105,7 @@ func main() {
 	//	api路由分組：很多種功能的api可以分組開發，這樣表現比較清晰
 	//	訪問時使用 /getnft/all, /getnft/personal, /getnft/remaining
 	//	可以用這種方式分很多組
-	routers.GetNFTInfoAPIInit(r)
-	routers.CheckNFTInfoInit(r)
+	routers.QueryNFTInit(r)
 
 	r.Run(":8080") //	裡面可以寫端口
 }

@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
-import "hardhat/console.sol";
 import {ERC1155Pausable} from "@openzeppelin/contracts/token/ERC1155/extensions/ERC1155Pausable.sol";
 import {ERC1155} from "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
@@ -14,6 +13,9 @@ import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/autom
  *         using NFTs held under ERC1155 as authentication for data access rights.
  */
 contract YiSinEBook is ERC1155, ERC1155Pausable, Ownable, ReentrancyGuard {
+    uint256 constant DECIMALS = 3; //  10^3
+    uint256 constant DECIMAL_FACTOR = 10 ** DECIMALS;
+    uint256 public fee = 30; //  Marketplace fee（fee/1000）
     struct BookInfo {
         address writer;
         uint256 supplyAmount;
@@ -46,7 +48,7 @@ contract YiSinEBook is ERC1155, ERC1155Pausable, Ownable, ReentrancyGuard {
         uint256 price,
         uint256 time
     ) external onlyOwner {
-        _mint(address(this), totalSupplyBook, bookAmount, "");
+        _mint(owner(), totalSupplyBook, bookAmount, "");
         bookInfos[totalSupplyBook] = BookInfo({
             writer: uploader,
             supplyAmount: bookAmount,
@@ -57,7 +59,7 @@ contract YiSinEBook is ERC1155, ERC1155Pausable, Ownable, ReentrancyGuard {
     }
 
     function burnEBook(uint256 bookId) external onlyOwner {
-        _burn(address(this), bookId, bookInfos[bookId].supplyAmount);
+        _burn(owner(), bookId, bookInfos[bookId].supplyAmount);
         _isBookBeBurned[bookId] = true;
         delete bookInfos[bookId];
         delete rentInfos[bookId];
@@ -78,7 +80,7 @@ contract YiSinEBook is ERC1155, ERC1155Pausable, Ownable, ReentrancyGuard {
         require(!_isBookBeBurned[bookId], "This book is not exist.");
         require(msg.sender != address(0), "Invalid call by address 0");
         require(
-            balanceOf(address(this), bookId) > 0,
+            balanceOf(owner(), bookId) > 0,
             "Invalid book id or insufficient balance"
         );
         require(balanceOf(msg.sender, bookId) == 0, "Already rented");
@@ -99,7 +101,8 @@ contract YiSinEBook is ERC1155, ERC1155Pausable, Ownable, ReentrancyGuard {
         );
         renterRentInfoIndex[msg.sender][bookId] = booksOnRent[bookId];
         booksOnRent[bookId]++;
-        safeTransferFrom(address(this), msg.sender, bookId, 1, "");
+        transferValueToWriter(bookInfos[bookId].writer, bookId);
+        safeTransferFrom(owner(), msg.sender, bookId, 1, "");
     }
 
     function returnBook(uint256 bookId) external nonReentrant {
@@ -158,12 +161,12 @@ contract YiSinEBook is ERC1155, ERC1155Pausable, Ownable, ReentrancyGuard {
         rentInfos[bookId][
             renterRentInfoIndex[renterAddress][bookId]
         ] = rentInfos[bookId][rentInfos[bookId].length - 1]; //  Move the last rent information to user's index.
-        rentInfos[bookId].pop(); //  pop the last rent information.
         renterRentInfoIndex[
             rentInfos[bookId][renterRentInfoIndex[renterAddress][bookId]].renter
         ][bookId] = renterRentInfoIndex[renterAddress][bookId]; //  The last user rent information index = user's index
+        rentInfos[bookId].pop(); //  pop the last rent information.
         booksOnRent[bookId]--;
-        safeTransferFrom(renterAddress, address(this), bookId, 1, "");
+        safeTransferFrom(renterAddress, owner(), bookId, 1, "");
     }
 
     /**
@@ -195,6 +198,14 @@ contract YiSinEBook is ERC1155, ERC1155Pausable, Ownable, ReentrancyGuard {
 
     function unpause() public onlyOwner {
         _unpause();
+    }
+
+    function transferValueToWriter(address writer, uint256 bookId) private {
+        payable(writer).transfer(devFee(bookInfos[bookId].rentPrice));
+    }
+
+    function devFee(uint256 price) private view returns(uint256) {
+        return price - (price * fee) / DECIMAL_FACTOR;
     }
 
     function _update(
