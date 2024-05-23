@@ -1,12 +1,12 @@
 import {createRouter,createWebHistory} from 'vue-router'
-import reference_book from '@/components/reference_book.vue'
+import ReferenceBook from '../pages/ReferenceBook.vue'
 const router=createRouter({
     history:createWebHistory(),
     routes:[
-        {
-            path:'/reference_book',
-            component:reference_book
-        }
+        { 
+            path:'/ReferenceBook',
+            component:ReferenceBook
+        },
     ]
 })
 export default router

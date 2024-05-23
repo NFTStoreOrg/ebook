@@ -9,7 +9,10 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "vue": "^3.4.21",
+    "@ankurk91/bootstrap-vue": "npm:@ankurk91/bootstrap-vue@latest",
+    "@vue/compat": "^3.4.27",
+    "bootstrap": "^5.3.3",
+    "vite-plugin-vue2": "^2.0.3",
     "vue-router": "^4.3.2"
   },
   "devDependencies": {
