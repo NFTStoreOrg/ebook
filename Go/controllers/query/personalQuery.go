@@ -81,17 +81,17 @@ func (con QueryPersonalController) GetPersonalRentedBook(ctx *gin.Context) {
 	body, _ := io.ReadAll(res.Body)
 
 	// Use json.Unmarshal, change json(body) to map(result)
-	var result map[string]interface{}
+	var result gin.H
 	json.Unmarshal(body, &result)
 
 	// extract token_id and metadata
 	items := result["result"].([]interface{})
-	var extractedItems []map[string]interface{}
+	var extractedItems []gin.H
 	for _, item := range items {
-		itemMap := item.(map[string]interface{})
+		itemMap := item.(gin.H)
 		tokenID := itemMap["token_id"].(string)
 		metadata := itemMap["metadata"].(string)
-		extractedItems = append(extractedItems, map[string]interface{}{
+		extractedItems = append(extractedItems, gin.H{
 			"token_id": tokenID,
 			"metadata": metadata,
 		})
