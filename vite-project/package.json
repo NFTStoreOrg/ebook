@@ -9,14 +9,16 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@ankurk91/bootstrap-vue": "npm:@ankurk91/bootstrap-vue@latest",
-    "@vue/compat": "^3.4.27",
-    "bootstrap": "^5.3.3",
-    "vite-plugin-vue2": "^2.0.3",
+    "@ankurk91/bootstrap-vue": "npm:@ankurk91/bootstrap-vue@^3.0.2",
+    "@vue/compiler-sfc": "^3.4.27",
+    "bootstrap": "4.0.0",
+    "install": "^0.13.0",
+    "vue": "^3.4.27",
     "vue-router": "^4.3.2"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.4",
+    "sass": "^1.77.2",
     "typescript": "^5.2.2",
     "vite": "^5.2.0",
     "vue-tsc": "^2.0.6"
