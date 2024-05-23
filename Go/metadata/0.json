@@ -1,0 +1,54 @@
+{
+    "title": "Book 0 name",
+    "type": "object",
+    "properties": {
+        "writer":{
+            "type": "string",
+            "description": "0xED558Eb698cF1116ADD49b6AF7A7A028e1B74B20"
+        },
+        "publisher":{
+            "type": "string",
+            "description": "出版社"
+        },
+        "publishDate":{
+            "type": "string",
+            "description": "2021-03-14"
+        },
+        "ISBN":{
+            "type": "string",
+            "description": "978-957-678-431-6"
+        },
+        "introduction":{
+            "type": "string",
+            "description": "some book introduction"
+        },
+        "chapter":{
+            "type": "string",
+            "description": "???"
+        },
+        "maxRentTime": {
+            "type": "string",
+            "description": "86400"
+        },
+        "price": {
+            "type": "string",
+            "description": "0.01"
+        },
+        "class": {
+            "type": "string",
+            "description": "reference"
+        },
+        "amount": {
+            "type": "string",
+            "description": "100"
+        },
+        "edition": {
+            "type": "string",
+            "description": "2e"
+        },
+        "pages": {
+            "type": "string",
+            "description": "573"
+        }
+    }
+}
