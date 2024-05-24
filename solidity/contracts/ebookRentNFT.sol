@@ -200,11 +200,20 @@ contract YiSinEBook is ERC1155, ERC1155Pausable, Ownable, ReentrancyGuard {
         _unpause();
     }
 
+    function setFee(uint256 _fee) external onlyOwner {
+        fee = _fee;
+    }
+
+    function withdraw() external onlyOwner {
+        uint256 balance = address(this).balance;
+        payable(msg.sender).transfer(balance);
+    }
+
     function transferValueToWriter(address writer, uint256 bookId) private {
         payable(writer).transfer(devFee(bookInfos[bookId].rentPrice));
     }
 
-    function devFee(uint256 price) private view returns(uint256) {
+    function devFee(uint256 price) private view returns (uint256) {
         return price - (price * fee) / DECIMAL_FACTOR;
     }
 
