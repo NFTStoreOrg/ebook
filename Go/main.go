@@ -106,6 +106,7 @@ func main() {
 	//	訪問時使用 /getnft/all, /getnft/personal, /getnft/remaining
 	//	可以用這種方式分很多組
 	routers.QueryNFTInit(r)
+	routers.UploadInit(r)
 
 	r.Run(":8080") //	裡面可以寫端口
 }

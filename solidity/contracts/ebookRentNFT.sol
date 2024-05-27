@@ -48,7 +48,7 @@ contract YiSinEBook is ERC1155, ERC1155Pausable, Ownable, ReentrancyGuard {
         uint256 price,
         uint256 time
     ) external onlyOwner {
-        _mint(owner(), totalSupplyBook, bookAmount, "");
+        _mint(msg.sender, totalSupplyBook, bookAmount, "");
         bookInfos[totalSupplyBook] = BookInfo({
             writer: uploader,
             supplyAmount: bookAmount,
@@ -84,7 +84,7 @@ contract YiSinEBook is ERC1155, ERC1155Pausable, Ownable, ReentrancyGuard {
             "Invalid book id or insufficient balance"
         );
         require(balanceOf(msg.sender, bookId) == 0, "Already rented");
-        require(isApprovedForAll(msg.sender, address(this)), "Not Approved");
+        require(isApprovedForAll(msg.sender, owner()), "Not Approved");
         require(msg.value == bookInfos[bookId].rentPrice, "Invalid price");
         require(bookId < totalSupplyBook, "Invalid bookId");
         require(
@@ -200,11 +200,20 @@ contract YiSinEBook is ERC1155, ERC1155Pausable, Ownable, ReentrancyGuard {
         _unpause();
     }
 
+    function setFee(uint256 _fee) external onlyOwner {
+        fee = _fee;
+    }
+
+    function withdraw() external onlyOwner {
+        uint256 balance = address(this).balance;
+        payable(msg.sender).transfer(balance);
+    }
+
     function transferValueToWriter(address writer, uint256 bookId) private {
         payable(writer).transfer(devFee(bookInfos[bookId].rentPrice));
     }
 
-    function devFee(uint256 price) private view returns(uint256) {
+    function devFee(uint256 price) private view returns (uint256) {
         return price - (price * fee) / DECIMAL_FACTOR;
     }
 
