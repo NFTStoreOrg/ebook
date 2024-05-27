@@ -1,75 +1,116 @@
 <script setup lang="ts" name="App">
-  import HelloWorld from './components/HelloWorld.vue'
+  // import HelloWorld from './components/HelloWorld.vue'
   import {RouterView,RouterLink} from 'vue-router'
 </script>
 
 <template>
-  <div>
-  <b-dropdown id="dropdown-1" text="Dropdown Button" class="m-md-2">
-    <b-dropdown-item>First Action</b-dropdown-item>
-    <b-dropdown-item>Second Action</b-dropdown-item>
-    <b-dropdown-item>Third Action</b-dropdown-item>
-    <b-dropdown-divider></b-dropdown-divider>
-    <b-dropdown-item active>Active action</b-dropdown-item>
-    <b-dropdown-item disabled>Disabled action</b-dropdown-item>
-  </b-dropdown>
-</div>
-  <!-- header -->
-  <div class="row sticky top-0 m-3 mx-auto items-center z-50">
-        <!-- 導覽 -->
-        <div class="col">
-            <ul class="nav justify-center ">
-                <li class="nav-item">
-                    <a class="nav-link" href="#" tabindex="-1" aria-disabled="true" style="color: rgb(48, 48, 48);">
-                        <b>EBOOK STORE</b></a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="">參考書</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="">其他</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="../index.html">NFT</a>
-                </li>
-
-            </ul>
+  <div class="bg-white">
+    <header class="absolute inset-x-0 top-0 z-50">
+      <nav class="flex items-center justify-between p-6 lg:px-8">
+        <div class="flex font-bold text-gray-400">  
+            EBOOK STORE
         </div>
-        <!-- account -->
-        <div class="col">
+        <div class="flex lg:gap-x-12 gap-x-7">
+          <RouterLink to="/" class="text-sm font-semibold text-indigo-900">首頁</RouterLink>
+          <RouterLink to="/" class="text-sm font-semibold text-indigo-900">教科書</RouterLink>
+          <RouterLink to="/ReferenceBook" class="text-sm font-semibold text-indigo-900">參考書籍</RouterLink>
+          <RouterLink to="/" class="text-sm font-semibold text-indigo-900">兒童書籍</RouterLink>
+          <RouterLink to="/" class="text-sm font-semibold text-indigo-900">互動書</RouterLink>
+          <RouterLink to="/" class="text-sm font-semibold text-indigo-900">影片</RouterLink>
+          <RouterLink to="/" class="text-sm font-semibold text-indigo-900">其他</RouterLink>
+          <RouterLink to="/" class="text-sm font-semibold text-indigo-900">NFT</RouterLink>
+        </div>
+
+        <div class="flex">
+          <a href="#" class="text-sm font-semibold text-gray-900">Log in <span aria-hidden="true">&rarr;</span></a>
+        </div>
+      </nav>
+      <!-- Mobile menu, show/hide based on menu open state. -->
+      <!-- <div class="lg:hidden md:hidden" role="dialog" aria-modal="true">
+        Background backdrop, show/hide based on slide-over state.
+        <div class="fixed inset-0 z-50"></div>
+        <div class="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-white px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10">
+          <div class="flex items-center justify-between">
+            <a href="#" class="-m-1.5 p-1.5">
+              <span class="sr-only">Your Company</span>
+              <img class="h-8 w-auto" src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600" alt="">
+            </a>
+            <button type="button" class="-m-2.5 rounded-md p-2.5 text-gray-700">
+              <span class="sr-only">Close menu</span>
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div class="mt-6 flow-root">
+            <div class="-my-6 divide-y divide-gray-500/10">
+              <div class="space-y-2 py-6">
+                <a href="#" class="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50">Product</a>
+                <a href="#" class="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50">Features</a>
+                <a href="#" class="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50">Marketplace</a>
+                <a href="#" class="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50">Company</a>
+              </div>
+              <div class="py-6">
+                <a href="#" class="-mx-3 block rounded-lg px-3 py-2.5 text-base font-semibold leading-7 text-gray-900 hover:bg-gray-50">Log in</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div> -->
+    </header>
+
+    <div class="relative isolate px-6 pt-14 lg:px-8">
+      <!-- 漸層 -->
+      <div class="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80" aria-hidden="true">
+        <div class="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]" style="clip-path: polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)"></div>
+      </div>
+      <div class="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
+        <div class="justify-center">
+          <RouterView></RouterView>
+          <!-- <div class="mt-10 flex items-center justify-center gap-x-6">
+            <a href="#" class="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Get started</a>
+            <a href="#" class="text-sm font-semibold leading-6 text-gray-900">Learn more <span aria-hidden="true">→</span></a>
+          </div> -->
+        </div>
+      </div>
+      <!-- 漸層 -->
+      <div class="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]" aria-hidden="true">
+        <div class="relative left-[calc(50%+3rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 sm:left-[calc(50%+36rem)] sm:w-[72.1875rem]" style="clip-path: polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)"></div>
+      </div>
+    </div>
+  </div>
+  <!-- header -->
+  <!-- <div class="row sticky top-0 m-3 mx-auto items-center z-50"> -->
+        <!-- 導覽 -->
+        
+        <!-- <b-nav>
+          <b-nav-item disabled class="font-bold text-red-400">
+            EBOOK STORE
+          </b-nav-item>
+          <b-nav-item>
+              <a class="nav-link" href="">參考書</a>
+          </b-nav-item>
+          <b-nav-item>
+              <a class="nav-link" href="">其他</a>
+          </b-nav-item>
+          <b-nav-item>
+              <a class="nav-link" href="../index.html">NFT</a>
+          </b-nav-item>
+        </b-nav> -->
+        <!-- 登入 -->
+        <!-- <div class="col">
             <ul class="nav justify-end w-5/6">
                 <li class="nav-item">
                     <button type="button" class="btn btn-outline-primary">登入
                     </button>
                 </li>
             </ul>
-        </div>
-    </div>
-  <RouterLink to="/ReferenceBook" active-class="">ReferenceBook</RouterLink>
-  <RouterView></RouterView>
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
-  </div>
-  <HelloWorld msg="Vite + Vue" />
+        </div> 
+     </div> 
+  <HelloWorld msg="Vite + Vue" /> -->
   
 </template>
 
 <style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
-}
+
 </style>
