@@ -7,11 +7,19 @@ const router=createRouter({
     routes:[
         { 
             path:'/',
-            component:Main
+            component: Main
         },
         { 
             path:'/ReferenceBook',
-            component:ReferenceBook
+            component: ReferenceBook
+        },
+        { 
+            path:'/NFT',
+            component: {
+                beforeCreate() {
+                    window.location.href = 'https://yisinnft.org/';
+                }
+            }
         },
     ]
 })

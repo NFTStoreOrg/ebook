@@ -4,21 +4,21 @@
 </script>
 
 <template>
-  <div class="bg-white">
-    <header class="absolute inset-x-0 top-0 z-50">
+  <div class="bg-white w-screen">
+    <header class="fixed inset-x-0 top-0 z-50">
       <nav class="flex items-center justify-between p-6 lg:px-8">
         <div class="flex font-bold text-gray-400">  
             EBOOK STORE
         </div>
         <div class="flex lg:gap-x-12 gap-x-7">
-          <RouterLink to="/" class="text-sm font-semibold text-indigo-900">首頁</RouterLink>
+          <RouterLink to="/" class="text-sm font-semibold" :class="$route.path === '/' ? 'text-gray-900' : 'text-indigo-900'">首頁</RouterLink>
           <RouterLink to="/" class="text-sm font-semibold text-indigo-900">教科書</RouterLink>
-          <RouterLink to="/ReferenceBook" class="text-sm font-semibold text-indigo-900">參考書籍</RouterLink>
+          <RouterLink to="/ReferenceBook" class="text-sm font-semibold" :class="$route.path === '/ReferenceBook' ? 'text-gray-900' : 'text-indigo-900'">參考書籍</RouterLink>
           <RouterLink to="/" class="text-sm font-semibold text-indigo-900">兒童書籍</RouterLink>
           <RouterLink to="/" class="text-sm font-semibold text-indigo-900">互動書</RouterLink>
           <RouterLink to="/" class="text-sm font-semibold text-indigo-900">影片</RouterLink>
           <RouterLink to="/" class="text-sm font-semibold text-indigo-900">其他</RouterLink>
-          <RouterLink to="/" class="text-sm font-semibold text-indigo-900">NFT</RouterLink>
+          <RouterLink to="/NFT" class="text-sm font-semibold text-indigo-900">NFT</RouterLink>
         </div>
 
         <div class="flex">
@@ -59,19 +59,13 @@
       </div> -->
     </header>
 
-    <div class="relative isolate px-6 pt-14 lg:px-8">
+    <div class="container isolate w-screen">
       <!-- 漸層 -->
       <div class="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80" aria-hidden="true">
         <div class="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-[#ff80b5] to-[#9089fc] opacity-30 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]" style="clip-path: polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)"></div>
       </div>
-      <div class="mx-auto max-w-2xl py-32 sm:py-48 lg:py-56">
-        <div class="justify-center">
+      <div class="absolute inset-x-0 top-20"> 
           <RouterView></RouterView>
-          <!-- <div class="mt-10 flex items-center justify-center gap-x-6">
-            <a href="#" class="rounded-md bg-indigo-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Get started</a>
-            <a href="#" class="text-sm font-semibold leading-6 text-gray-900">Learn more <span aria-hidden="true">→</span></a>
-          </div> -->
-        </div>
       </div>
       <!-- 漸層 -->
       <div class="absolute inset-x-0 top-[calc(100%-13rem)] -z-10 transform-gpu overflow-hidden blur-3xl sm:top-[calc(100%-30rem)]" aria-hidden="true">
@@ -79,35 +73,7 @@
       </div>
     </div>
   </div>
-  <!-- header -->
-  <!-- <div class="row sticky top-0 m-3 mx-auto items-center z-50"> -->
-        <!-- 導覽 -->
-        
-        <!-- <b-nav>
-          <b-nav-item disabled class="font-bold text-red-400">
-            EBOOK STORE
-          </b-nav-item>
-          <b-nav-item>
-              <a class="nav-link" href="">參考書</a>
-          </b-nav-item>
-          <b-nav-item>
-              <a class="nav-link" href="">其他</a>
-          </b-nav-item>
-          <b-nav-item>
-              <a class="nav-link" href="../index.html">NFT</a>
-          </b-nav-item>
-        </b-nav> -->
-        <!-- 登入 -->
-        <!-- <div class="col">
-            <ul class="nav justify-end w-5/6">
-                <li class="nav-item">
-                    <button type="button" class="btn btn-outline-primary">登入
-                    </button>
-                </li>
-            </ul>
-        </div> 
-     </div> 
-  <HelloWorld msg="Vite + Vue" /> -->
+  <!-- <HelloWorld msg="Vite + Vue" />  -->
   
 </template>
 
