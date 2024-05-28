@@ -9,5 +9,11 @@ func UploadInit(r *gin.Engine) {
 	instance := GetInstance()
 
 	uploadController := write.UploadController{Instance: instance}
-	r.POST("/upload", uploadController.UploadEbook)
+	rentController := write.RentController{Instance: instance}
+	writeNFT := r.Group("/write")
+	{
+		writeNFT.POST("/upload", uploadController.UploadEbook)
+		writeNFT.POST("/rent", rentController.RentBook)
+	}
+
 }

@@ -90,7 +90,7 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 		return
 	}
 
-	//	For contract send
+	//	Address for contract send
 	address := common.HexToAddress(uploader)
 	file, err3 := ctx.FormFile("book")
 	if err3 != nil {
@@ -131,12 +131,12 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 	//	Using goroutine to asynchronously execute blockchain upload books
 	//	Struct for blockchain result
 	type Result struct {
-		Message *types.Transaction
-		Error   error
+		TransactionMessage *types.Transaction
+		Error              error
 	}
 	//	Channel to receive the result
 	ch := make(chan Result)
-	//	Call pravite functino to upload to blockchain.
+	//	Call pravite function to upload to blockchain.
 	go func() {
 		tx, err := con.uploadToBlockchain(amount, address, weiValue, maxRentTime)
 
@@ -241,14 +241,14 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 		}
 	}
 
+	//	Process blockchain error.
 	res := <-ch
 	if res.Error != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"blockchain_error": res.Error,
 		})
 	} else {
-
-		tx := res.Message
+		tx := res.TransactionMessage
 		ctx.JSON(http.StatusOK, gin.H{
 			"file_success":     true,
 			"transaction_hash": tx.Hash().Hex(),
