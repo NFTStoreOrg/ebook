@@ -10,7 +10,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/gin-gonic/gin"
-	ebook "yisinnft.org/m/v2/contract"
+	ebook "yisinnft.org/m/v2/contracts"
 )
 
 type QueryPersonalController struct {

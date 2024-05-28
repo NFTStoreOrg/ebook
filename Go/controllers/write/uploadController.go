@@ -3,9 +3,11 @@ package write
 import (
 	"context"
 	"crypto/ecdsa"
-	"log"
+	"encoding/json"
+	"fmt"
 	"math/big"
 	"net/http"
+	"os"
 	"path"
 	"strconv"
 
@@ -16,46 +18,56 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/gin-gonic/gin"
-	ebook "yisinnft.org/m/v2/contract"
+	ebook "yisinnft.org/m/v2/contracts"
 )
 
 type UploadController struct {
 	Instance *ebook.YiSinEBook
 }
 
+// Process book information and return success or not.
 func (con UploadController) UploadEbook(ctx *gin.Context) {
 	//	Get post params
+	title := ctx.PostForm("title")
 	writer := ctx.PostForm("writer")
 	publisher := ctx.PostForm("publisher")
 	publishDate := ctx.PostForm("publishDate")
+	uploader := ctx.PostForm("uploader")
 	isbn := ctx.PostForm("isbn")
 	introduction := ctx.PostForm("introduction")
 	chapter := ctx.PostForm("chapter")
 	maxRentTimeStr := ctx.PostForm("maxRentTime")
 	priceStr := ctx.PostForm("price")
-	class := ctx.PostForm("class")
+	className := ctx.PostForm("class")
+	grade := ctx.PostForm("grade")
 	amountStr := ctx.PostForm("amount")
 	edition := ctx.PostForm("edition")
 	pagesStr := ctx.PostForm("pages")
-	uploader := ctx.PostForm("uploader")
+	live := ctx.PostForm("live")
 
 	//	Transform amount(string) to amount(big.Int)
 	amount := new(big.Int)
 	var ok bool
 	amount, ok = amount.SetString(amountStr, 10)
 	if !ok {
-		ctx.String(http.StatusBadRequest, "Amount transform fail")
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"information_fail": "Amount transform fail",
+		})
 		return
 	}
 	//	if amount > 100
-	if amount.Cmp(big.NewInt(100)) == 1 {
-		ctx.String(http.StatusBadRequest, "Exceed max supply 100")
+	if amount.Cmp(big.NewInt(1000)) == 1 {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"information_fail": "Exceed max supply 100",
+		})
 		return
 	}
 	// Transform price(string) to price(float)
 	price, err1 := strconv.ParseFloat(priceStr, 64)
 	if err1 != nil {
-		ctx.String(http.StatusBadRequest, "Price transform fail")
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"information_fail": "Price transform fail",
+		})
 		return
 	}
 	//	Price from eth to wei
@@ -78,14 +90,14 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 		return
 	}
 
-	//	For contract send
+	//	Address for contract send
 	address := common.HexToAddress(uploader)
-	_, _, _, _, _, _, _, _, _ = writer, publisher, publishDate, isbn, introduction, chapter, class, edition, pages
 	file, err3 := ctx.FormFile("book")
 	if err3 != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"file_success": false,
 		})
+		return
 	}
 	//	Verify file format
 	extName := path.Ext(file.Filename)
@@ -102,34 +114,164 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 		ctx.String(http.StatusBadRequest, "上傳文件類型不合法")
 		return
 	}
-
-	dst := path.Join("./static/upload", file.Filename)
+	//	Get this book's tokenId to
+	tokenId, err6 := con.Instance.TotalSupplyBook(nil)
+	if err6 != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"token_id_success": false,
+		})
+		return
+	}
+	tokenId = tokenId.Sub(tokenId, big.NewInt(1))
+	tokenIdStr := tokenId.String()
+	//	Generate file's path and name
+	dst := path.Join("./static/upload", className, tokenIdStr+extName)
 	ctx.SaveUploadedFile(file, dst)
 
-	//	Call pravite functino to upload to blockchain.
-	tx := con.uploadToBlockchain(amount, address, weiValue, maxRentTime)
+	//	Using goroutine to asynchronously execute blockchain upload books
+	//	Struct for blockchain result
+	type Result struct {
+		TransactionMessage *types.Transaction
+		Error              error
+	}
+	//	Channel to receive the result
+	ch := make(chan Result)
+	//	Call pravite function to upload to blockchain.
+	go func() {
+		tx, err := con.uploadToBlockchain(amount, address, weiValue, maxRentTime)
 
-	ctx.JSON(http.StatusOK, gin.H{
-		"file_success":     true,
-		"transaction_hash": tx,
-	})
+		if tx == nil {
+			ch <- Result{nil, err}
+			return
+		}
+		ch <- Result{tx, nil}
+	}()
+
+	//	Write metadata
+	metaData := gin.H{
+		"title": title,
+		"type":  "Object",
+		"properties": gin.H{
+			"writer": gin.H{
+				"type":        "string",
+				"description": writer,
+			},
+			"publisher": gin.H{
+				"type":        "string",
+				"description": publisher,
+			},
+			"publishDate": gin.H{
+				"type":        "string",
+				"description": publishDate,
+			},
+			"ISBN": gin.H{
+				"type":        "string",
+				"description": isbn,
+			},
+			"introduction": gin.H{
+				"type":        "string",
+				"description": introduction,
+			},
+			"chapter": gin.H{
+				"type":        "string",
+				"description": chapter,
+			},
+			"maxRentTime": gin.H{
+				"type":        "string",
+				"description": maxRentTime,
+			},
+			"price": gin.H{
+				"type":        "string",
+				"description": price,
+			},
+			"class": gin.H{
+				"type": "object",
+				"description": gin.H{
+					"class_name": className,
+					"grade":      grade,
+				},
+			},
+			"amount": gin.H{
+				"type":        "string",
+				"description": amount,
+			},
+			"edition": gin.H{
+				"type":        "string",
+				"description": edition,
+			},
+			"pages": gin.H{
+				"type":        "string",
+				"description": pages,
+			},
+			"uploader": gin.H{
+				"type":        "string",
+				"description": uploader,
+			},
+			"live": gin.H{
+				"type":        "string",
+				"descriptino": live,
+			},
+		},
+	}
+
+	fileData, err := json.MarshalIndent(metaData, "", "    ")
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": "cannot generate JSON",
+		})
+		return
+	}
+	if grade != "0" {
+		filePath := path.Join("./metadata", className, grade, tokenIdStr+".json")
+		err = os.WriteFile(filePath, fileData, 0644)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Run failed while writing metadata file",
+			})
+			return
+		}
+	} else {
+		filePath := path.Join("./metadata", className, tokenIdStr+".json")
+		err = os.WriteFile(filePath, fileData, 0644)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Run failed while writing metadata file",
+			})
+			return
+		}
+	}
+
+	//	Process blockchain error.
+	res := <-ch
+	if res.Error != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"blockchain_error": res.Error,
+		})
+	} else {
+		tx := res.TransactionMessage
+		ctx.JSON(http.StatusOK, gin.H{
+			"file_success":     true,
+			"transaction_hash": tx.Hash().Hex(),
+		})
+	}
+
 }
 
-func (con UploadController) uploadToBlockchain(amount *big.Int, uploader common.Address, price *big.Int, time *big.Int) *types.Transaction {
+func (con UploadController) uploadToBlockchain(amount *big.Int, uploader common.Address, price *big.Int, time *big.Int) (*types.Transaction, error) {
 	privateKey, err := crypto.HexToECDSA("24afe77abe16d1bf92de7e6b88590fda82d9fe20f3bd06582c935f7454b33002")
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	//	Get public key from private key
 	publicKey := privateKey.Public()
 	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
 	if !ok {
-		log.Fatal("cannot assert type: publicKey is not of type *ecdsa.PublicKey")
+		return nil, fmt.Errorf("cannot assert type: publicKey is not of type *ecdsa.PublicKey, got %T", publicKey)
 	}
 	//	Define ethereum node
 	client, err1 := ethclient.Dial("https://ethereum-sepolia-rpc.publicnode.com")
 	if err1 != nil {
-		log.Fatal(err)
+		return nil, err1
 	}
 
 	//	@param fromAddress company wallet address
@@ -137,18 +279,18 @@ func (con UploadController) uploadToBlockchain(amount *big.Int, uploader common.
 	//	Get nonce and gas pirce。
 	nonce, err2 := client.PendingNonceAt(context.Background(), fromAddress)
 	if err2 != nil {
-		log.Fatal(err2)
+		return nil, err2
 	}
 	gasPrice, err3 := client.SuggestGasPrice(context.Background())
 	if err3 != nil {
-		log.Fatal(err3)
+		return nil, err3
 	}
 
 	//	Define trsaction auth
 	chainID := big.NewInt(11155111)
 	auth, err4 := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
 	if err4 != nil {
-		log.Fatal(err4)
+		return nil, err4
 	}
 
 	auth.Nonce = big.NewInt(int64(nonce))
@@ -158,8 +300,8 @@ func (con UploadController) uploadToBlockchain(amount *big.Int, uploader common.
 
 	tx, err5 := con.Instance.UploadEBook(auth, amount, uploader, price, time)
 	if err5 != nil {
-		log.Fatal(err5)
+		return nil, err5
 	}
 
-	return tx
+	return tx, nil
 }

@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	ebook "yisinnft.org/m/v2/contract"
+	ebook "yisinnft.org/m/v2/contracts"
 )
 
 type QueryBookController struct {
@@ -30,10 +30,10 @@ func (con QueryBookController) GetBookInformation(ctx *gin.Context) {
 	info, _ := con.Instance.BookInfos(nil, idBigInt)
 	//	Return book information
 	ctx.JSON(http.StatusOK, gin.H{
-		"writer":        info.Writer,
-		"supply_amount": info.SupplyAmount,
-		"price":         info.RentPrice,
-		"max_rent_time": info.MaxRentTime,
+		"writer_address": info.Writer,
+		"supply_amount":  info.SupplyAmount,
+		"price":          info.RentPrice,
+		"max_rent_time":  info.MaxRentTime,
 	})
 }
 
