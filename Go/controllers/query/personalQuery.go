@@ -10,11 +10,13 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/mongo"
 	ebook "yisinnft.org/m/v2/contracts"
 )
 
 type QueryPersonalController struct {
 	Instance *ebook.YiSinEBook
+	DB       *mongo.Client
 }
 
 func (con QueryPersonalController) GetRentBookEndTime(ctx *gin.Context) {

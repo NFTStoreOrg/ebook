@@ -58,6 +58,10 @@
         "writer": {
             "description": "測試作者",
             "type": "string"
+        },
+        "tokenId":{
+            "description": "4",
+            "type":"string"
         }
     },
     "title": "測試書名",
