@@ -28,7 +28,7 @@
             "type": "string"
         },
         "live": {
-            "descriptino": "true",
+            "description": "true",
             "type": "string"
         },
         "maxRentTime": {
@@ -58,6 +58,10 @@
         "writer": {
             "description": "測試作者",
             "type": "string"
+        },
+        "tokenId":{
+            "description": "1",
+            "type":"string"
         }
     },
     "title": "測試書名",

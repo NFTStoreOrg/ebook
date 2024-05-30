@@ -4,22 +4,26 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
-	"yisinnft.org/m/v2/routers" //	引用routers包調用方法
+	"go.mongodb.org/mongo-driver/mongo"
+	"yisinnft.org/m/v2/routers"
 )
+
+var client *mongo.Client
 
 func main() {
 	//	Initial API information
 	r := gin.Default()
 
-	//	設定信任代理ip
+	//	Set trust poxy ip
 	trustedProxies := []string{"211.75.24.91"}
 	err := r.SetTrustedProxies(trustedProxies)
 	if err != nil {
 		log.Fatal("Set trust proxies fail: ", err)
 	}
-
+	//	Initial routers
 	routers.QueryNFTInit(r)
 	routers.UploadInit(r)
 
-	r.Run(":8080") //	裡面可以寫端口
+	r.Run(":8080")
 }
+

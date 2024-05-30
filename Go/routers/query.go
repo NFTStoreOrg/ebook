@@ -7,8 +7,9 @@ import (
 
 func QueryNFTInit(r *gin.Engine) {
 	instance := GetInstance()
-	queryBookController := query.QueryBookController{Instance: instance}
-	queryPersonalController := query.QueryPersonalController{Instance: instance}
+	db := GetDB()
+	queryBookController := query.QueryBookController{Instance: instance, DB: db}
+	queryPersonalController := query.QueryPersonalController{Instance: instance, DB: db}
 
 	//	Configure router
 	queryNFTApi := r.Group("/query")
@@ -18,6 +19,7 @@ func QueryNFTInit(r *gin.Engine) {
 			queryBookApi.GET("/totalsupply", queryBookController.GetVarietyOfBook)
 			queryBookApi.GET("/information/:id", queryBookController.GetBookInformation)
 			queryBookApi.GET("/remain/:id", queryBookController.GetBookRemaining)
+			queryBookApi.GET("/:class",queryBookController.GetClassOfBooks)
 		}
 		queryPersonalApi := queryNFTApi.Group("/:address")
 		{

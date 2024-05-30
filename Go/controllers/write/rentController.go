@@ -20,22 +20,37 @@ type RentController struct {
 func (con RentController) RentBook(ctx *gin.Context) {
 	bookIdStr := ctx.PostForm("bookId")
 	timeStr := ctx.PostForm("time")
+	renter := ctx.PostForm("renter") //	未來要傳給api的參數，告訴他是誰要借書
+	_ = renter
 
 	bookId := new(big.Int)
 	var ok bool
 	bookId, ok = bookId.SetString(bookIdStr, 10)
 	if !ok {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"bookId_fail": "BookId transform fail.",
+			"rent_status": false,
+			"error":       "BookId transform fail.",
 		})
 	}
 	info, _ := con.Instance.BookInfos(nil, bookId)
 	price := info.RentPrice
+	maxTime := info.MaxRentTime
 
 	time := new(big.Int)
 	time, ok1 := time.SetString(timeStr, 10)
 	if !ok1 {
-		ctx.String(http.StatusBadRequest, "Time transform fail")
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"rent_status": false,
+			"error":       "Transform time fail",
+		})
+		return
+	}
+	if time.Cmp(maxTime) == 1 {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"rent_status": false,
+			"error":       "Time exceed max rent time",
+		})
+
 		return
 	}
 	//	這裡開始將來要改成call api取得私鑰
@@ -43,7 +58,8 @@ func (con RentController) RentBook(ctx *gin.Context) {
 	privateKey, err := crypto.HexToECDSA(apiPrivateKey)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Get private key fail",
+			"rent_status": false,
+			"error":       "Get private key fail",
 		})
 		return
 	}
@@ -52,7 +68,8 @@ func (con RentController) RentBook(ctx *gin.Context) {
 	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
 	if !ok {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": "cannot assert type: publicKey is not of type *ecdsa.PublicKey",
+			"rent_status": false,
+			"error":       "cannot assert type: publicKey is not of type *ecdsa.PublicKey",
 		})
 		return
 	}
@@ -60,7 +77,8 @@ func (con RentController) RentBook(ctx *gin.Context) {
 	client, err1 := ethclient.Dial("https://ethereum-sepolia-rpc.publicnode.com")
 	if err1 != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": "Get ETH client fail",
+			"rent_status": false,
+			"error":       "Get ETH client fail",
 		})
 		return
 	}
@@ -69,7 +87,8 @@ func (con RentController) RentBook(ctx *gin.Context) {
 	nonce, err2 := client.PendingNonceAt(context.Background(), fromAddress)
 	if err2 != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Get nonce fail",
+			"rent_status": false,
+			"error":       "Get nonce fail",
 		})
 		return
 	}
@@ -77,7 +96,8 @@ func (con RentController) RentBook(ctx *gin.Context) {
 	gasPrice, err3 := client.SuggestGasPrice(context.Background())
 	if err3 != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Get gas price fail",
+			"rent_status": false,
+			"error":       "Get gas price fail",
 		})
 		return
 	}
@@ -86,7 +106,8 @@ func (con RentController) RentBook(ctx *gin.Context) {
 	auth, err4 := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
 	if err4 != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Get transaction auth fail",
+			"rent_status": false,
+			"error":       "Get transaction auth fail",
 		})
 		return
 	}
@@ -98,8 +119,9 @@ func (con RentController) RentBook(ctx *gin.Context) {
 	tx, err5 := con.Instance.RentBook(auth, bookId, time)
 	if err5 != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error":   err5,
-			"message": "Failed to rent a book on the blockchain",
+			"rent_status": false,
+			"error":       err5,
+			"message":     "Failed to rent a book on the blockchain",
 		})
 		return
 	}
@@ -108,5 +130,5 @@ func (con RentController) RentBook(ctx *gin.Context) {
 		"rent_status": true,
 		"tx_hash":     txHash,
 	})
-
+	
 }

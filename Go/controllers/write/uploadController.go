@@ -3,11 +3,9 @@ package write
 import (
 	"context"
 	"crypto/ecdsa"
-	"encoding/json"
 	"fmt"
 	"math/big"
 	"net/http"
-	"os"
 	"path"
 	"strconv"
 
@@ -18,11 +16,13 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/mongo"
 	ebook "yisinnft.org/m/v2/contracts"
 )
 
 type UploadController struct {
 	Instance *ebook.YiSinEBook
+	DB       *mongo.Client
 }
 
 // Process book information and return success or not.
@@ -43,7 +43,7 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 	amountStr := ctx.PostForm("amount")
 	edition := ctx.PostForm("edition")
 	pagesStr := ctx.PostForm("pages")
-	live := ctx.PostForm("live")
+	liveStr := ctx.PostForm("live")
 
 	//	Transform amount(string) to amount(big.Int)
 	amount := new(big.Int)
@@ -51,14 +51,16 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 	amount, ok = amount.SetString(amountStr, 10)
 	if !ok {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"information_fail": "Amount transform fail",
+			"upload_status": false,
+			"error":         "Amount transform fail",
 		})
 		return
 	}
 	//	if amount > 100
 	if amount.Cmp(big.NewInt(1000)) == 1 {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"information_fail": "Exceed max supply 100",
+			"upload_status": false,
+			"error":         "Amount exceed max supply 1000",
 		})
 		return
 	}
@@ -66,7 +68,8 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 	price, err1 := strconv.ParseFloat(priceStr, 64)
 	if err1 != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"information_fail": "Price transform fail",
+			"upload_status": false,
+			"error":         "Price transform fail",
 		})
 		return
 	}
@@ -78,7 +81,10 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 	//	Transform pages(string) to pages(int)
 	pages, err2 := strconv.Atoi(pagesStr)
 	if err2 != nil {
-		ctx.String(http.StatusBadRequest, "Pages transform fail")
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"upload_status": false,
+			"error":         "Pages transform fail",
+		})
 		return
 	}
 
@@ -86,7 +92,10 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 	maxRentTime := new(big.Int)
 	maxRentTime, ok1 := maxRentTime.SetString(maxRentTimeStr, 10)
 	if !ok1 {
-		ctx.String(http.StatusBadRequest, "MaxRentTime transform fail")
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"upload_status": false,
+			"error":         "MaxRentTime transform fail",
+		})
 		return
 	}
 
@@ -95,9 +104,18 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 	file, err3 := ctx.FormFile("book")
 	if err3 != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"file_success": false,
+			"upload_status": false,
+			"error":         "File error",
 		})
 		return
+	}
+
+	live, err := strconv.ParseBool(liveStr)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"upload_status": false,
+			"error":         "Live tranform fail",
+		})
 	}
 	//	Verify file format
 	extName := path.Ext(file.Filename)
@@ -111,14 +129,18 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 	}
 
 	if _, ok := allowExtMap[extName]; !ok {
-		ctx.String(http.StatusBadRequest, "上傳文件類型不合法")
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"upload_status": false,
+			"error":         "Invalid file type",
+		})
 		return
 	}
 	//	Get this book's tokenId to
 	tokenId, err6 := con.Instance.TotalSupplyBook(nil)
 	if err6 != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"token_id_success": false,
+			"upload_status": false,
+			"error":         "Get tokenId fail",
 		})
 		return
 	}
@@ -147,111 +169,51 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 		ch <- Result{tx, nil}
 	}()
 
-	//	Write metadata
+	//	Write metadata to database
 	metaData := gin.H{
-		"title": title,
-		"type":  "Object",
-		"properties": gin.H{
-			"writer": gin.H{
-				"type":        "string",
-				"description": writer,
-			},
-			"publisher": gin.H{
-				"type":        "string",
-				"description": publisher,
-			},
-			"publishDate": gin.H{
-				"type":        "string",
-				"description": publishDate,
-			},
-			"ISBN": gin.H{
-				"type":        "string",
-				"description": isbn,
-			},
-			"introduction": gin.H{
-				"type":        "string",
-				"description": introduction,
-			},
-			"chapter": gin.H{
-				"type":        "string",
-				"description": chapter,
-			},
-			"maxRentTime": gin.H{
-				"type":        "string",
-				"description": maxRentTime,
-			},
-			"price": gin.H{
-				"type":        "string",
-				"description": price,
-			},
-			"class": gin.H{
-				"type": "object",
-				"description": gin.H{
-					"class_name": className,
-					"grade":      grade,
-				},
-			},
-			"amount": gin.H{
-				"type":        "string",
-				"description": amount,
-			},
-			"edition": gin.H{
-				"type":        "string",
-				"description": edition,
-			},
-			"pages": gin.H{
-				"type":        "string",
-				"description": pages,
-			},
-			"uploader": gin.H{
-				"type":        "string",
-				"description": uploader,
-			},
-			"live": gin.H{
-				"type":        "string",
-				"descriptino": live,
-			},
+		"title":        title,
+		"writer":       writer,
+		"publisher":    publisher,
+		"publishDate":  publishDate,
+		"ISBN":         isbn,
+		"introduction": introduction,
+		"chapter":      chapter,
+		"maxRentTime":  maxRentTime,
+		"price":        price,
+		"class": gin.H{
+			"class_name": className,
+			"grade":      grade,
 		},
+		"amount":   amount,
+		"edition":  edition,
+		"pages":    pages,
+		"uploader": uploader,
+		"live":     live,
+		"tokenId":  tokenId,
 	}
+	collection := con.DB.Database("ebook").Collection(className)
 
-	fileData, err := json.MarshalIndent(metaData, "", "    ")
-	if err != nil {
+	_, err4 := collection.InsertOne(context.Background(), metaData)
+	if err4 != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": "cannot generate JSON",
+			"upload_status": false,
+			"error":         "Write in database error",
 		})
 		return
-	}
-	if grade != "0" {
-		filePath := path.Join("./metadata", className, grade, tokenIdStr+".json")
-		err = os.WriteFile(filePath, fileData, 0644)
-		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{
-				"error": "Run failed while writing metadata file",
-			})
-			return
-		}
-	} else {
-		filePath := path.Join("./metadata", className, tokenIdStr+".json")
-		err = os.WriteFile(filePath, fileData, 0644)
-		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{
-				"error": "Run failed while writing metadata file",
-			})
-			return
-		}
 	}
 
 	//	Process blockchain error.
 	res := <-ch
 	if res.Error != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"upload_status":    false,
 			"blockchain_error": res.Error,
 		})
 	} else {
 		tx := res.TransactionMessage
 		ctx.JSON(http.StatusOK, gin.H{
-			"file_success":     true,
-			"transaction_hash": tx.Hash().Hex(),
+			"upload_status": true,
+			"tx_hash":       tx.Hash().Hex(),
 		})
 	}
 
