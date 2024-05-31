@@ -32,47 +32,53 @@
         <div class="grid grid-cols-1 gap-8 mt-3 lg:grid-cols-4 md:grid-cols-3 xl:grid-cols-6 mx-auto">
             <div v-for="book in books"
                 class="max-w-[226px] p-2 group hover:cursor-pointer hover:shadow-lg transition duration-500 ease hover:-translate-y-2">
-                <div class="group-hover:blur-[1px]">
-                    <img class="min-w-[210px] max-h-[315px]" :src="book.imgUrl" alt="">
+                <div
+                    class="hover:bg-blue-700 hover:border-white hidden group-hover:block absolute start-[85px] top-[140px] rounded-full border-x-slate-200 p-2 z-20 border-4 text-white bg-blue-700 bg-opacity-50">
+                    <p class="mb-0">Detail</p>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                        class="bi bi-arrow-up-right-square ml-2.5" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd"
+                            d="M15 2a1 1 0 0 0-1-1H2a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1zM0 2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2zm5.854 8.803a.5.5 0 1 1-.708-.707L9.243 6H6.475a.5.5 0 1 1 0-1h3.975a.5.5 0 0 1 .5.5v3.975a.5.5 0 1 1-1 0V6.707z" />
+                    </svg>
                 </div>
+                <img class="min-w-[210px] max-h-[315px] group-hover:blur-[1px]" :src="book.imgUrl" alt="">
                 <p class="text-lg font-bold mt-2 line-clamp-2">{{ book.title }}</p>
                 <p class="text-sm font-bold text-end mb-1">優惠價 NT$
                     <span class="text-sm font-bold text-sky-600">{{ book.price }}</span>
                 </p>
-
             </div>
         </div>
-        <!-- <summary class="card mb-3" style="border-color: transparent;background-color: transparent">
-            <div class="card-group row" id="card_group" style="display: grid;gap:12px;">
-                <div v-for="n in 10" class="col p-0 hover:shadow-lg transition duration-500 ease hover:-translate-y-2">
-                    <div class="hover:border-indigo-600 hover:border-3 card w-100 h-100"
-                        onclick="location.href = '/pages/product_info.html?tokenId={{card.tokenId}}'">
-                        <img src="https://images.pexels.com/photos/762687/pexels-photo-762687.jpeg?auto=compress&cs=tinysrgb"
-                            class="card-img-top">
-                        <div class="card-body row">
-                            <h6 class="card-title">
-                                電子書
-                            </h6>
-                            <div class="col">
-                                <h7 class="card-text">
-                                    電子書簡介
-                                </h7>
-                            </div>
-
-                            <div class="col text-end">
-                                價格
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </summary> -->
     </div>
 
     <!-- section3 -->
     <div class="row mx-auto rounded-3xl m-3 min-h-[80vh] max-w-[95%] bg-[#fff6ee]/[.4]">
 
+    </div>
+    <div class="snap-x snap-mandatory ...">
+        <div class="snap-always snap-center ...">
+            <img
+                src="https://images.unsplash.com/photo-1604999565976-8913ad2ddb7c?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=320&h=160&q=80" />
+        </div>
+        <div class="snap-always snap-center ...">
+            <img
+                src="https://images.unsplash.com/photo-1540206351-d6465b3ac5c1?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=320&h=160&q=80" />
+        </div>
+        <div class="snap-always snap-center ...">
+            <img
+                src="https://images.unsplash.com/photo-1622890806166-111d7f6c7c97?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=320&h=160&q=80" />
+        </div>
+        <div class="snap-always snap-center ...">
+            <img
+                src="https://images.unsplash.com/photo-1590523277543-a94d2e4eb00b?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=320&h=160&q=80" />
+        </div>
+        <div class="snap-always snap-center ...">
+            <img
+                src="https://images.unsplash.com/photo-1575424909138-46b05e5919ec?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=320&h=160&q=80" />
+        </div>
+        <div class="snap-always snap-center ...">
+            <img
+                src="https://images.unsplash.com/photo-1559333086-b0a56225a93c?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=320&h=160&q=80" />
+        </div>
     </div>
 </template>
 <script setup lang="ts" name="Main">
