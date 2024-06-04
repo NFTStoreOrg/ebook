@@ -1,15 +1,18 @@
 package query
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"math/big"
 	"net/http"
+	"sync"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	ebook "yisinnft.org/m/v2/contracts"
 )
@@ -104,7 +107,59 @@ func (con QueryPersonalController) GetPersonalRentedBook(ctx *gin.Context) {
 }
 
 func (con QueryPersonalController) GetPersonalPublish(ctx *gin.Context) {
-	address := common.HexToAddress(ctx.Param("address"))
-	_ = address
-	//	撈資料庫
+	address := ctx.Param("address")
+	db := con.DB.Database("ebook")
+	collections, err := db.ListCollectionNames(context.TODO(), bson.M{})
+
+	if err != nil {
+		ctx.JSON(http.StatusBadGateway, gin.H{
+			"error": "Failing when search collections",
+		})
+		return
+	}
+
+	var wg sync.WaitGroup
+	bookChannel := make(chan Book)
+	books := make([]Book, 0)
+
+	//	Start a goroutine as consumer
+	go func() {
+		for book := range bookChannel {
+			books = append(books, book)
+		}
+	}()
+	//	A goroutine corresponds to a collection
+	for _, collName := range collections {
+		//	Add one wait group
+		wg.Add(1)
+		go func(collName string) {
+			//	Decrease one when function be solved
+			defer wg.Done()
+			coll := db.Collection(collName)
+			filter := bson.M{"uploader": address}
+
+			cur, _ := coll.Find(context.TODO(), filter)
+			if cur == nil {
+				return
+			}
+
+			for cur.Next(context.TODO()) {
+				var book Book
+				if err := cur.Decode(&book); err != nil {
+					ctx.JSON(http.StatusInternalServerError, gin.H{
+						"error": "Error occur while decoding data",
+					})
+					return
+				}
+				bookChannel <- book
+			}
+		}(collName)
+	}
+	//	Wait until counter is zero
+	wg.Wait()
+	close(bookChannel)
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": books,
+	})
 }

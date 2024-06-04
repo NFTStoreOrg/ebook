@@ -19,7 +19,9 @@ func QueryNFTInit(r *gin.Engine) {
 			queryBookApi.GET("/totalsupply", queryBookController.GetVarietyOfBook)
 			queryBookApi.GET("/information/:id", queryBookController.GetBookInformation)
 			queryBookApi.GET("/remain/:id", queryBookController.GetBookRemaining)
-			queryBookApi.GET("/:class",queryBookController.GetClassOfBooks)
+			queryBookApi.GET("/:class", queryBookController.GetClassOfBooks)
+			queryBookApi.GET("/index/:class", queryBookController.GetClassOfTwentyBooksForIndex)
+			queryBookApi.GET("/index", queryBookController.GetNewestTwelveBookForIndex)
 		}
 		queryPersonalApi := queryNFTApi.Group("/:address")
 		{

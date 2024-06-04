@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"path"
 	"strconv"
+	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	"github.com/ethereum/go-ethereum/common"
@@ -144,7 +145,7 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 		})
 		return
 	}
-	tokenId = tokenId.Sub(tokenId, big.NewInt(1))
+	// tokenId = tokenId.Sub(tokenId, big.NewInt(1))
 	tokenIdStr := tokenId.String()
 	//	Generate file's path and name
 	dst := path.Join("./static/upload", className, tokenIdStr+extName)
@@ -169,6 +170,17 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 		ch <- Result{tx, nil}
 	}()
 
+	tokenIdInt := tokenId.Int64()
+	amountInt := amount.Int64()
+	maxRentTimeInt := maxRentTime.Int64()
+	gradeInt, err7 := strconv.Atoi(grade)
+	if err7 != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"upload_status": false,
+			"error":         "Transform grade to int fail",
+		})
+	}
+
 	//	Write metadata to database
 	metaData := gin.H{
 		"title":        title,
@@ -178,18 +190,19 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 		"ISBN":         isbn,
 		"introduction": introduction,
 		"chapter":      chapter,
-		"maxRentTime":  maxRentTime,
+		"maxRentTime":  maxRentTimeInt,
 		"price":        price,
 		"class": gin.H{
 			"class_name": className,
-			"grade":      grade,
+			"grade":      gradeInt,
 		},
-		"amount":   amount,
-		"edition":  edition,
-		"pages":    pages,
-		"uploader": uploader,
-		"live":     live,
-		"tokenId":  tokenId,
+		"amount":     amountInt,
+		"edition":    edition,
+		"pages":      pages,
+		"uploader":   uploader,
+		"live":       live,
+		"tokenId":    tokenIdInt,
+		"uploadTime": time.Now().Unix(),
 	}
 	collection := con.DB.Database("ebook").Collection(className)
 
