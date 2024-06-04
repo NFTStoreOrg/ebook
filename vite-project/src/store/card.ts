@@ -70,7 +70,7 @@ export const useCardStore=defineStore('card',{
                     title: "時光的記憶：遺忘與回憶的交錯",
                     imgUrl: "https://s3.amazonaws.com/virginia.webrand.com/virginia/nMzY6NJ97Xs/0d40507679ea0528a8cbc080bf0a74e6/344/1648657152.png",
                     price: 100
-                }
+                },
             ]
         }
     }

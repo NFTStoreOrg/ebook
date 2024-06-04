@@ -1,11 +1,22 @@
 <script setup lang="ts" name="App">
 // import HelloWorld from './components/HelloWorld.vue'
+import { ref } from 'vue'
 import { RouterView, RouterLink } from 'vue-router'
+var scrollDown = ref()
+
+window.addEventListener("scroll", handleScroll);
+function handleScroll() {
+  if (window.scrollY >= 200) {
+    scrollDown.value.classList.add('bg-slate-100');
+  } else {
+    scrollDown.value.classList.remove('bg-slate-100');
+  }
+}
 </script>
 
 <template>
   <div class="bg-white w-screen">
-    <header class="fixed inset-x-0 top-0 z-50">
+    <header class="fixed inset-x-0 top-0 z-50 bg-opacity-[90%]" ref="scrollDown">
       <nav class="flex items-center justify-between p-6 lg:px-8">
         <div class="flex font-bold text-gray-400">
           EBOOK STORE
@@ -15,7 +26,7 @@ import { RouterView, RouterLink } from 'vue-router'
             :class="$route.path === '/' ? 'text-gray-900' : 'text-indigo-900'">首頁</RouterLink>
           <RouterLink to="/" class="text-sm font-semibold text-indigo-900">教科書</RouterLink>
           <RouterLink to="/ReferenceBook" class="text-sm font-semibold"
-            :class="$route.path === '/ReferenceBook' ? 'text-gray-900' : 'text-indigo-900'">參考書籍</RouterLink>
+            :class="$route.path === '/ReferenceBook' ? 'text-gray-900' : 'text-indigo-900'">參考書</RouterLink>
           <RouterLink to="/" class="text-sm font-semibold text-indigo-900">兒童書籍</RouterLink>
           <RouterLink to="/" class="text-sm font-semibold text-indigo-900">互動書</RouterLink>
           <RouterLink to="/" class="text-sm font-semibold text-indigo-900">影片</RouterLink>

@@ -50,19 +50,42 @@
     </div>
 
     <!-- section3 -->
-    <div class="row mx-auto text-3xl max-w-[95%]">參考書</div>
+    <div class="row mx-auto text-2xl max-w-[95%] font-bold pl-3 pt-3 tracking-wider">教科書</div>
     <div class="row mx-auto rounded-3xl m-3 max-h-[80vh] max-w-[95%] bg-orange-200 bg-opacity-50">
         <div class="flex snap-x snap-mandatory items-center gap-x-3 overflow-x-auto p-4">
             <card></card>
         </div>
     </div>
-    <!-- <div class="row mx-auto rounded-3xl m-3 min-h-[80vh] max-w-[95%] bg-rose-100 bg-opacity-50">
-
-    </div> -->
-    <div class="row mx-auto rounded-3xl m-3 min-h-[80vh] max-w-[95%] bg-sky-200 bg-opacity-50">
-
+    <div class="row mx-auto text-2xl max-w-[95%] font-bold pl-3 pt-3 tracking-wider">參考書</div>
+    <div class="row mx-auto rounded-3xl m-3 max-h-[80vh] max-w-[95%] bg-red-100 bg-opacity-50">
+        <div class="flex snap-x snap-mandatory items-center gap-x-3 overflow-x-auto p-4">
+            <card></card>
+        </div>
     </div>
-
+    <div class="row mx-auto text-2xl max-w-[95%] font-bold pl-3 pt-3 tracking-wider">兒童書籍</div>
+    <div class="row mx-auto rounded-3xl m-3 max-h-[80vh] max-w-[95%] bg-sky-200 bg-opacity-50">
+        <div class="flex snap-x snap-mandatory items-center gap-x-3 overflow-x-auto p-4">
+            <card></card>
+        </div>
+    </div>
+    <div class="row mx-auto text-2xl max-w-[95%] font-bold pl-3 pt-3 tracking-wider">互動書</div>
+    <div class="row mx-auto rounded-3xl m-3 max-h-[80vh] max-w-[95%] bg-violet-100 bg-opacity-50">
+        <div class="flex snap-x snap-mandatory items-center gap-x-3 overflow-x-auto p-4">
+            <card></card>
+        </div>
+    </div>
+    <div class="row mx-auto text-2xl max-w-[95%] font-bold pl-3 pt-3 tracking-wider">影片</div>
+    <div class="row mx-auto rounded-3xl m-3 max-h-[80vh] max-w-[95%] bg-violet-100 bg-opacity-50">
+        <div class="flex snap-x snap-mandatory items-center gap-x-3 overflow-x-auto p-4">
+            <card></card>
+        </div>
+    </div>
+    <div class="row mx-auto text-2xl max-w-[95%] font-bold pl-3 pt-3 tracking-wider">其他</div>
+    <div class="row mx-auto rounded-3xl m-3 max-h-[80vh] max-w-[95%] bg-violet-100 bg-opacity-50">
+        <div class="flex snap-x snap-mandatory items-center gap-x-3 overflow-x-auto p-4">
+            <card></card>
+        </div>
+    </div>
 </template>
 <script setup lang="ts" name="Main">
 // import { ref } from 'vue'
