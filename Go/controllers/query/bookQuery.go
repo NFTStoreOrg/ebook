@@ -192,7 +192,8 @@ func (con QueryBookController) GetClassOfTwentyBooksForIndex(ctx *gin.Context) {
 
 // Get latest 12 books for index, use merge sort
 func (con QueryBookController) GetNewestTwelveBookForIndex(ctx *gin.Context) {
-	collections, err := con.DB.Database("ebook").ListCollectionNames(context.TODO(), bson.M{})
+	db := con.DB.Database("ebook")
+	collections, err := db.ListCollectionNames(context.TODO(), bson.M{})
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"error": "Failing when search collections",
@@ -201,4 +202,100 @@ func (con QueryBookController) GetNewestTwelveBookForIndex(ctx *gin.Context) {
 	}
 
 	var wg sync.WaitGroup
+	booksChannel := make(chan []Book)
+	sortedBooksArray := make([][]Book, 0)
+
+	//	Use a goroutine consuming books information in channel
+	go func() {
+		for book := range booksChannel {
+			sortedBooksArray = append(sortedBooksArray, book)
+		}
+	}()
+
+	for _, collName := range collections {
+		wg.Add(1)
+
+		//	Use mongoDB SetSort function to get sorted books array (by uploadTime desc)
+		go func(collName string) {
+			defer wg.Done()
+			coll := db.Collection(collName)
+			//	Find every collection's newest 12 books
+			cur, _ := coll.Find(context.TODO(), bson.D{{}}, options.Find().SetSort(bson.D{{Key: "uploadTime", Value: -1}}).SetLimit(12))
+			if cur == nil {
+				return
+			}
+			defer cur.Close(context.TODO())
+
+			//	Decode result into book, and append to results
+			var results []Book
+			for cur.Next(context.TODO()) {
+				var book Book
+				if err := cur.Decode(&book); err != nil {
+					ctx.JSON(http.StatusInternalServerError, gin.H{
+						"error": "Error occur while decoding data",
+					})
+					return
+				}
+				results = append(results, book)
+			}
+			//	Put results into channel
+			booksChannel <- results
+		}(collName)
+	}
+
+	wg.Wait()
+	close(booksChannel)
+
+	result := mergeSortedArrays(sortedBooksArray)
+
+	if len(result) > 12 {
+		result = result[:12]
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": result,
+	})
+}
+
+func mergeSortedArrays(sortedArrays [][]Book) []Book {
+	//	If only one array, return directly
+	if len(sortedArrays) == 1 {
+		return sortedArrays[0]
+	}
+	//	Merge every book arrays until length of array is 1
+	for len(sortedArrays) > 1 {
+		var newSortedArrays [][]Book
+		for i := 0; i < len(sortedArrays); i += 2 {
+			//	If this array is the last array, append to new arrays
+			if i == len(sortedArrays)-1 {
+				newSortedArrays = append(newSortedArrays, sortedArrays[i])
+			} else { //	Merge two array into one sorted array, and append to new arrays
+				merged := merge(sortedArrays[i], sortedArrays[i+1])
+				newSortedArrays = append(newSortedArrays, merged)
+			}
+		}
+		sortedArrays = newSortedArrays
+	}
+
+	return sortedArrays[0]
+}
+
+func merge(left, right []Book) []Book {
+	var result []Book
+	var i, j = 0, 0
+	//	If left and right are not empty, compare the first one
+	for i < len(left) && j < len(right) {
+		if left[i].UploadTime > right[j].UploadTime {
+			result = append(result, left[i])
+			i++
+		} else {
+			result = append(result, right[j])
+			j++
+		}
+	}
+
+	result = append(result, left[i:]...)
+	result = append(result, right[j:]...)
+
+	return result
 }

@@ -125,8 +125,7 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 		".jpg":  true,
 		".png":  true,
 		".jpeg": true,
-		".pdf":  true,
-		".mp4":  true,
+		".PNG":  true,
 	}
 
 	if _, ok := allowExtMap[extName]; !ok {
@@ -148,8 +147,21 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 	// tokenId = tokenId.Sub(tokenId, big.NewInt(1))
 	tokenIdStr := tokenId.String()
 	//	Generate file's path and name
-	dst := path.Join("./static/upload", className, tokenIdStr+extName)
+	dst := path.Join("./static/upload", tokenIdStr+extName)
 	ctx.SaveUploadedFile(file, dst)
+	httpDst := "https://yisinnft.org/images/" + tokenIdStr + extName
+
+	tokenIdInt := tokenId.Int64()
+	amountInt := amount.Int64()
+	maxRentTimeInt := maxRentTime.Int64()
+	gradeInt, err7 := strconv.Atoi(grade)
+	if err7 != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"upload_status": false,
+			"error":         "Transform grade to int fail",
+		})
+		return
+	}
 
 	//	Using goroutine to asynchronously execute blockchain upload books
 	//	Struct for blockchain result
@@ -169,17 +181,6 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 		}
 		ch <- Result{tx, nil}
 	}()
-
-	tokenIdInt := tokenId.Int64()
-	amountInt := amount.Int64()
-	maxRentTimeInt := maxRentTime.Int64()
-	gradeInt, err7 := strconv.Atoi(grade)
-	if err7 != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"upload_status": false,
-			"error":         "Transform grade to int fail",
-		})
-	}
 
 	//	Write metadata to database
 	metaData := gin.H{
@@ -203,6 +204,7 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 		"live":       live,
 		"tokenId":    tokenIdInt,
 		"uploadTime": time.Now().Unix(),
+		"coverImage": httpDst,
 	}
 	collection := con.DB.Database("ebook").Collection(className)
 
@@ -222,6 +224,7 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 			"upload_status":    false,
 			"blockchain_error": res.Error,
 		})
+		return
 	} else {
 		tx := res.TransactionMessage
 		ctx.JSON(http.StatusOK, gin.H{

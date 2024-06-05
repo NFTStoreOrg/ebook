@@ -163,3 +163,8 @@ func (con QueryPersonalController) GetPersonalPublish(ctx *gin.Context) {
 		"data": books,
 	})
 }
+
+// func (con QueryPersonalController) GetFileMiddleWare(ctx *gin.Context) {
+// 	signature := ctx.Param("signature")
+
+// }
