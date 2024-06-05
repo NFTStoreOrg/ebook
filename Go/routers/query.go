@@ -20,6 +20,7 @@ func QueryNFTInit(r *gin.Engine) {
 			queryBookApi.GET("/information/:id", queryBookController.GetBookInformation)
 			queryBookApi.GET("/remain/:id", queryBookController.GetBookRemaining)
 			queryBookApi.GET("/:class", queryBookController.GetClassOfBooks)
+			queryBookApi.GET("/live", queryBookController.GetLiveBook)
 			queryBookApi.GET("/index/:class", queryBookController.GetClassOfTwentyBooksForIndex)
 			queryBookApi.GET("/index", queryBookController.GetNewestTwelveBookForIndex)
 		}

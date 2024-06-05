@@ -299,3 +299,54 @@ func merge(left, right []Book) []Book {
 
 	return result
 }
+
+func (con QueryBookController) GetLiveBook(ctx *gin.Context) {
+	db := con.DB.Database("ebook")
+	collections, err := db.ListCollectionNames(context.TODO(), bson.M{})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failing when search collections",
+		})
+		return
+	}
+
+	var wg sync.WaitGroup
+	booksChannel := make(chan Book)
+	books := make([]Book, 0)
+
+	go func() {
+		for book := range booksChannel {
+			books = append(books, book)
+		}
+	}()
+
+	for _, collName := range collections {
+		wg.Add(1)
+		go func(collName string) {
+			defer wg.Done()
+			coll := db.Collection(collName)
+			filter := bson.M{"live": true}
+			cur, _ := coll.Find(context.TODO(), filter)
+			if cur == nil {
+				return
+			}
+
+			for cur.Next(context.TODO()) {
+				var book Book
+				if err := cur.Decode(&book); err != nil {
+					ctx.JSON(http.StatusInternalServerError, gin.H{
+						"error": "Error occur while decoding data",
+					})
+					return
+				}
+				booksChannel <- book
+			}
+		}(collName)
+	}
+	wg.Wait()
+	close(booksChannel)
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"data":books,
+	})
+}
