@@ -63,65 +63,14 @@ func (con RentController) RentBook(ctx *gin.Context) {
 		})
 		return
 	}
-
-	publicKey := privateKey.Public()
-	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
-	if !ok {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"rent_status": false,
-			"error":       "cannot assert type: publicKey is not of type *ecdsa.PublicKey",
-		})
-		return
-	}
-
-	client, err1 := ethclient.Dial("https://ethereum-sepolia-rpc.publicnode.com")
-	if err1 != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"rent_status": false,
-			"error":       "Get ETH client fail",
-		})
-		return
-	}
-
-	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
-	nonce, err2 := client.PendingNonceAt(context.Background(), fromAddress)
-	if err2 != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"rent_status": false,
-			"error":       "Get nonce fail",
-		})
-		return
-	}
-
-	gasPrice, err3 := client.SuggestGasPrice(context.Background())
-	if err3 != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"rent_status": false,
-			"error":       "Get gas price fail",
-		})
-		return
-	}
-
-	chainID := big.NewInt(11155111)
-	auth, err4 := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
-	if err4 != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"rent_status": false,
-			"error":       "Get transaction auth fail",
-		})
-		return
-	}
-	auth.Nonce = big.NewInt(int64(nonce))
-	auth.Value = price
-	auth.GasLimit = uint64(300000)
-	auth.GasPrice = gasPrice
+	auth := getTransactionAuth(privateKey, price, ctx)
 
 	tx, err5 := con.Instance.RentBook(auth, bookId, time)
 	if err5 != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
+		ctx.JSON(http.StatusBadGateway, gin.H{
 			"rent_status": false,
-			"error":       err5,
-			"message":     "Failed to rent a book on the blockchain",
+			"error":       err5.Error(),
+			"message":     "Failing while rent a book on the blockchain",
 		})
 		return
 	}
@@ -130,5 +79,115 @@ func (con RentController) RentBook(ctx *gin.Context) {
 		"rent_status": true,
 		"tx_hash":     txHash,
 	})
-	
+}
+
+func (con RentController) ReturnBook(ctx *gin.Context) {
+	bookIdStr := ctx.PostForm("bookId")
+	addressStr := ctx.PostForm("address")
+
+	_ = addressStr
+
+	bookIdBig := new(big.Int)
+
+	bookIdBig, ok := bookIdBig.SetString(bookIdStr, 10)
+
+	if !ok {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"return_status": false,
+			"error":         "Transform bookId fail",
+		})
+		return
+	}
+
+	apiPrivateKey := "" // Call api to get key.
+
+	privateKey, err := crypto.HexToECDSA(apiPrivateKey)
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"return_status": false,
+			"error":         "Get privateKey error",
+		})
+	}
+
+	auth := getTransactionAuth(privateKey, big.NewInt(0), ctx)
+	if auth == nil {
+		return
+	}
+
+	tx, err := con.Instance.ReturnBook(auth, bookIdBig)
+	if err != nil {
+		ctx.JSON(http.StatusBadGateway, gin.H{
+			"return_status": false,
+			"error":         err.Error(),
+			"message":       "Failing while trade on blockchain",
+		})
+		return
+	}
+
+	txHash := tx.Hash().Hex()
+	ctx.JSON(http.StatusOK, gin.H{
+		"return_status": true,
+		"tx_hash":       txHash,
+	})
+}
+
+func getTransactionAuth(privateKey *ecdsa.PrivateKey, price *big.Int, ctx *gin.Context) *bind.TransactOpts {
+	//	Get node client
+	client, err1 := ethclient.Dial("https://ethereum-sepolia-rpc.publicnode.com")
+	if err1 != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"rent_status": false,
+			"error":       "Get ETH client fail",
+		})
+		return nil
+	}
+
+	//	Get public key and public key ecdsa
+	publicKey := privateKey.Public()
+	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
+	if !ok {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"rent_status": false,
+			"error":       "cannot assert type: publicKey is not of type *ecdsa.PublicKey",
+		})
+		return nil
+	}
+	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
+	//	Get nonce and gas price.
+	nonce, err2 := client.PendingNonceAt(context.Background(), fromAddress)
+	if err2 != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"rent_status": false,
+			"error":       "Get nonce fail",
+		})
+		return nil
+	}
+	gasPrice, err3 := client.SuggestGasPrice(context.Background())
+	if err3 != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"rent_status": false,
+			"error":       "Get gas price fail",
+		})
+		return nil
+	}
+
+	//	Set chain id and new an auth
+	chainID := big.NewInt(11155111)
+	auth, err4 := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
+	if err4 != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"rent_status": false,
+			"error":       "Get transaction auth fail",
+		})
+		return nil
+	}
+
+	//	Set auth information
+	auth.Nonce = big.NewInt(int64(nonce))
+	auth.Value = price
+	auth.GasLimit = uint64(300000)
+	auth.GasPrice = gasPrice
+
+	return auth
 }

@@ -2,14 +2,17 @@ package query
 
 import (
 	"context"
+	"fmt"
 	"math/big"
 	"net/http"
+	"sync"
 
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	ebook "yisinnft.org/m/v2/contracts"
 )
 
@@ -19,27 +22,28 @@ type QueryBookController struct {
 }
 
 type Book struct {
-	Title        string  `bson:"title,omitempty"`
-	ISBN         string  `bson:"ISBN,omitempty"`
-	Amount       int     `bson:"amount,omitempty"`
-	Chapter      string  `bson:"chapter,omitempty"`
-	Class        Class   `bson:"class,omitempty"`
-	Edition      string  `bson:"edition,omitempty"`
-	Introduction string  `bson:"introduction,omitempty"`
-	Live         bool    `bson:"live,omitempty"`
-	MaxRentTime  int     `bson:"maxRentTime,omitempty"`
-	Pages        int     `bson:"pages,omitempty"`
-	Price        float64 `bson:"price,omitempty"`
-	PublishDate  string  `bson:"publishDate,omitempty"`
-	Publisher    string  `bson:"publisher,omitempty"`
-	Uploader     string  `bson:"uploader,omitempty"`
-	Writer       string  `bson:"writer,omitempty"`
-	TokenId      int     `bson:"tokenId,omitempty"`
+	Title        string  `bson:"title,omitempty" json:"title"`
+	ISBN         string  `bson:"ISBN,omitempty" json:"ISBN"`
+	Amount       int64   `bson:"amount,omitempty" json:"amount"`
+	Chapter      string  `bson:"chapter,omitempty" json:"chapter"`
+	Class        Class   `bson:"class,omitempty" json:"class"`
+	Edition      string  `bson:"edition,omitempty" json:"edition"`
+	Introduction string  `bson:"introduction,omitempty" json:"introduction"`
+	Live         bool    `bson:"live,omitempty" json:"live"`
+	MaxRentTime  int64   `bson:"maxRentTime,omitempty" json:"max_rent_time"`
+	Pages        int     `bson:"pages,omitempty" json:"pages"`
+	Price        float64 `bson:"price,omitempty" json:"price"`
+	PublishDate  string  `bson:"publishDate,omitempty" json:"publish_date"`
+	Publisher    string  `bson:"publisher,omitempty" json:"publisher"`
+	Uploader     string  `bson:"uploader,omitempty" json:"uploader"`
+	Writer       string  `bson:"writer,omitempty" json:"writer"`
+	TokenId      int64   `bson:"tokenId,omitempty" json:"tokenId"`
+	UploadTime   int64   `bson:"uploadTime,omitempty" json:"upload_time"`
 }
 
 type Class struct {
-	ClassName string `bson:"class_name,omitempty"`
-	Grade     int    `bson:"grade,omitempty"`
+	ClassName string `bson:"class_name,omitempty" json:"class_name"`
+	Grade     int    `bson:"grade,omitempty" json:"grade"`
 }
 
 func (con QueryBookController) GetVarietyOfBook(ctx *gin.Context) {
@@ -47,7 +51,6 @@ func (con QueryBookController) GetVarietyOfBook(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"variety": total,
 	})
-
 }
 
 func (con QueryBookController) GetBookInformation(ctx *gin.Context) {
@@ -82,16 +85,16 @@ func (con QueryBookController) GetBookInformation(ctx *gin.Context) {
 		}
 	}
 
-	if !found{
-		ctx.JSON(http.StatusBadRequest,gin.H{
-			"error":"No book found with the given tokenId",
+	if !found {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "No book found with the given tokenId",
 		})
 		return
 	}
 
 	//	Return book information
 	ctx.JSON(http.StatusOK, gin.H{
-		"data":book,
+		"data": book,
 	})
 }
 
@@ -132,6 +135,7 @@ func (con QueryBookController) GetClassOfBooks(ctx *gin.Context) {
 		var result Book
 		err := cur.Decode(&result)
 		if err != nil {
+			fmt.Println(err.Error())
 			ctx.JSON(http.StatusBadRequest, gin.H{
 				"error": "Failing while decode result",
 			})
@@ -146,4 +150,55 @@ func (con QueryBookController) GetClassOfBooks(ctx *gin.Context) {
 		"data": results,
 	})
 
+}
+
+func (con QueryBookController) GetClassOfTwentyBooksForIndex(ctx *gin.Context) {
+	class := ctx.Param("class")
+
+	collection := con.DB.Database("ebook").Collection(class)
+
+	//	Set find options to get newest 20 books information
+	findOptions := options.Find()
+	findOptions.SetSort(bson.D{{Key: "uploadTime", Value: -1}})
+	findOptions.SetLimit(20)
+
+	var results []Book
+	cur, err := collection.Find(context.TODO(), bson.D{{}}, findOptions)
+	if err != nil {
+		ctx.JSON(http.StatusBadGateway, gin.H{
+			"error": "Error occur while searching data",
+		})
+		return
+	}
+
+	defer cur.Close(context.TODO())
+
+	for cur.Next(context.TODO()) {
+		var result Book
+		err := cur.Decode(&result)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"error":   "Error while decoding data",
+				"message": err.Error(),
+			})
+		}
+		results = append(results, result)
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": results,
+	})
+}
+
+// Get latest 12 books for index, use merge sort
+func (con QueryBookController) GetNewestTwelveBookForIndex(ctx *gin.Context) {
+	collections, err := con.DB.Database("ebook").ListCollectionNames(context.TODO(), bson.M{})
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": "Failing when search collections",
+		})
+		return
+	}
+
+	var wg sync.WaitGroup
 }
