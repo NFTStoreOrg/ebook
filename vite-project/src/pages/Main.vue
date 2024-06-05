@@ -31,65 +31,95 @@
         <hr class="block mb-0 w-full" />
         <div class="grid grid-cols-1 gap-8 mt-3 lg:grid-cols-4 md:grid-cols-3 xl:grid-cols-6 mx-auto">
             <Card></Card>
-            <!-- <div v-for="book in books"
-                class="max-w-[226px] p-2 group hover:cursor-pointer hover:shadow-lg transition duration-500 ease hover:-translate-y-2">
-                <div
-                    class="hidden group-hover:block absolute start-[71px] top-[160px] hover:bg-blue-700 hover:border-0 rounded-full border-2 p-2 px-3 z-20">
-                    <div class="flex text-white">
-                        <p class="mb-0 text-sm font-semibold tracking-wide">Detail <span
-                                aria-hidden="true">&rarr;</span></p>
-                    </div>
-                </div>
-                <img class="min-w-[210px] max-h-[315px] group-hover:blur-[1px]" :src="book.imgUrl" alt="">
-                <p class="text-lg font-bold mt-2 line-clamp-2">{{ book.title }}</p>
-                <p class="text-sm font-bold text-end mb-1">優惠價 NT$
-                    <span class="text-sm font-bold text-sky-600">{{ book.price }}</span>
-                </p>
-            </div> -->
         </div>
     </div>
 
     <!-- section3 -->
-    <div class="row mx-auto text-2xl max-w-[95%] font-bold pl-3 pt-3 tracking-wider">教科書</div>
-    <div class="row mx-auto rounded-3xl m-3 max-h-[80vh] max-w-[95%] bg-orange-200 bg-opacity-50">
-        <div class="flex snap-x snap-mandatory items-center gap-x-3 overflow-x-auto p-4">
-            <card></card>
-        </div>
-    </div>
-    <div class="row mx-auto text-2xl max-w-[95%] font-bold pl-3 pt-3 tracking-wider">參考書</div>
-    <div class="row mx-auto rounded-3xl m-3 max-h-[80vh] max-w-[95%] bg-red-100 bg-opacity-50">
-        <div class="flex snap-x snap-mandatory items-center gap-x-3 overflow-x-auto p-4">
-            <card></card>
-        </div>
-    </div>
-    <div class="row mx-auto text-2xl max-w-[95%] font-bold pl-3 pt-3 tracking-wider">兒童書籍</div>
-    <div class="row mx-auto rounded-3xl m-3 max-h-[80vh] max-w-[95%] bg-sky-200 bg-opacity-50">
-        <div class="flex snap-x snap-mandatory items-center gap-x-3 overflow-x-auto p-4">
-            <card></card>
-        </div>
-    </div>
-    <div class="row mx-auto text-2xl max-w-[95%] font-bold pl-3 pt-3 tracking-wider">互動書</div>
-    <div class="row mx-auto rounded-3xl m-3 max-h-[80vh] max-w-[95%] bg-violet-100 bg-opacity-50">
-        <div class="flex snap-x snap-mandatory items-center gap-x-3 overflow-x-auto p-4">
-            <card></card>
-        </div>
-    </div>
-    <div class="row mx-auto text-2xl max-w-[95%] font-bold pl-3 pt-3 tracking-wider">影片</div>
-    <div class="row mx-auto rounded-3xl m-3 max-h-[80vh] max-w-[95%] bg-violet-100 bg-opacity-50">
-        <div class="flex snap-x snap-mandatory items-center gap-x-3 overflow-x-auto p-4">
-            <card></card>
-        </div>
-    </div>
-    <div class="row mx-auto text-2xl max-w-[95%] font-bold pl-3 pt-3 tracking-wider">其他</div>
-    <div class="row mx-auto rounded-3xl m-3 max-h-[80vh] max-w-[95%] bg-violet-100 bg-opacity-50">
-        <div class="flex snap-x snap-mandatory items-center gap-x-3 overflow-x-auto p-4">
-            <card></card>
+    <CardSlide title="教科書" slideBgColor="bg-orange-200"></CardSlide>
+    <CardSlide title="參考書" slideBgColor="bg-red-100"></CardSlide>
+    <CardSlide title="兒童書籍" slideBgColor="bg-sky-200"></CardSlide>
+    <CardSlide title="互動書" slideBgColor="bg-violet-100"></CardSlide>
+    <CardSlide title="影片" slideBgColor="bg-violet-100"></CardSlide>
+    <CardSlide title="其他" slideBgColor="bg-violet-100"></CardSlide>
+
+    <!-- Modal toggle -->
+    <button data-modal-target="authentication-modal" data-modal-toggle="authentication-modal"
+        class="block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+        type="button">
+        Toggle modal
+    </button>
+
+    <!-- Main modal -->
+    <div id="authentication-modal" aria-hidden="true"
+        class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+        <div class="relative p-4 w-full max-w-md max-h-full">
+            <!-- Modal content -->
+            <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+                <!-- Modal header -->
+                <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+                        Sign in to our platform
+                    </h3>
+                    <button type="button"
+                        class="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                        data-modal-hide="authentication-modal">
+                        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                            viewBox="0 0 14 14">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+                        </svg>
+                        <span class="sr-only">Close modal</span>
+                    </button>
+                </div>
+                <!-- Modal body -->
+                <div class="p-4 md:p-5">
+                    <form class="space-y-4" action="#">
+                        <div>
+                            <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your
+                                email</label>
+                            <input type="email" name="email" id="email"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                                placeholder="name@company.com" required />
+                        </div>
+                        <div>
+                            <label for="password"
+                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your
+                                password</label>
+                            <input type="password" name="password" id="password" placeholder="••••••••"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                                required />
+                        </div>
+                        <div class="flex justify-between">
+                            <div class="flex items-start">
+                                <div class="flex items-center h-5">
+                                    <input id="remember" type="checkbox" value=""
+                                        class="w-4 h-4 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-blue-300 dark:bg-gray-600 dark:border-gray-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800"
+                                        required />
+                                </div>
+                                <label for="remember"
+                                    class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Remember
+                                    me</label>
+                            </div>
+                            <a href="#" class="text-sm text-blue-700 hover:underline dark:text-blue-500">Lost
+                                Password?</a>
+                        </div>
+                        <button type="submit"
+                            class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Login
+                            to your account</button>
+                        <div class="text-sm font-medium text-gray-500 dark:text-gray-300">
+                            Not registered? <a href="#" class="text-blue-700 hover:underline dark:text-blue-500">Create
+                                account</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </div>
 </template>
 <script setup lang="ts" name="Main">
 // import { ref } from 'vue'
 import Card from '../components/Card.vue'
+import CardSlide from '../components/CardSlide.vue'
 
 </script>
 <style scoped>

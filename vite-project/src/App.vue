@@ -2,6 +2,9 @@
 // import HelloWorld from './components/HelloWorld.vue'
 import { ref } from 'vue'
 import { RouterView, RouterLink } from 'vue-router'
+import { initFlowbite } from 'flowbite'
+initFlowbite();
+
 var scrollDown = ref()
 
 window.addEventListener("scroll", handleScroll);
@@ -35,7 +38,7 @@ function handleScroll() {
         </div>
 
         <div class="flex">
-          <a href="#" class="text-sm font-semibold text-gray-900">Log in <span aria-hidden="true">&rarr;</span></a>
+          <a class="text-sm font-semibold text-gray-900">Log in <span aria-hidden="true">&rarr;</span></a>
         </div>
       </nav>
       <!-- Mobile menu, show/hide based on menu open state. -->
