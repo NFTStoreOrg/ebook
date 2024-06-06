@@ -85,25 +85,75 @@ func (con QueryPersonalController) GetPersonalRentedBook(ctx *gin.Context) {
 	defer res.Body.Close()
 	body, _ := io.ReadAll(res.Body)
 
-	// Use json.Unmarshal, change json(body) to map(result)
+	// Use json.Unmarshal, analyze body(json) to result(gin.H)
 	var result gin.H
 	json.Unmarshal(body, &result)
 
-	// extract token_id and metadata
+	// extract token_id
 	items := result["result"].([]interface{})
-	var extractedItems []gin.H
+	var extractedItems []int64
 	for _, item := range items {
 		itemMap := item.(gin.H)
-		tokenID := itemMap["token_id"].(string)
-		metadata := itemMap["metadata"].(string)
-		extractedItems = append(extractedItems, gin.H{
-			"token_id": tokenID,
-			"metadata": metadata,
-		})
+		tokenID := itemMap["token_id"].(int64)
+		extractedItems = append(extractedItems, tokenID)
 	}
 
-	// Return message after extract
-	ctx.JSON(http.StatusOK, extractedItems)
+	db := con.DB.Database("ebook")
+
+	collections, err := db.ListCollectionNames(context.TODO(), bson.M{})
+	if err != nil {
+		ctx.JSON(http.StatusBadGateway, gin.H{
+			"error": "Failing when search collections",
+		})
+		return
+	}
+
+	bookChannel := make(chan Book)
+	books := make([]Book, 0)
+	go func() {
+		for book := range bookChannel {
+			books = append(books, book)
+		}
+	}()
+
+	var wg sync.WaitGroup
+
+	for _, collName := range collections {
+		wg.Add(1)
+
+		go func(collName string) {
+			defer wg.Done()
+
+			coll := db.Collection(collName)
+			filter := bson.M{"tokenId": bson.M{"$in": extractedItems}}
+
+			cur, _ := coll.Find(context.TODO(), filter)
+			if cur == nil {
+				return
+			}
+
+			for cur.Next(context.TODO()) {
+				var result Book
+				err = cur.Decode(&result)
+				if err != nil {
+					ctx.JSON(http.StatusInternalServerError, gin.H{
+						"error": "Fail occur while decoding result",
+					})
+					return
+				}
+				bookChannel <- result
+			}
+
+			cur.Close(context.TODO())
+		}(collName)
+	}
+	wg.Done()
+	close(bookChannel)
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": books,
+	})
+
 }
 
 func (con QueryPersonalController) GetPersonalPublish(ctx *gin.Context) {
