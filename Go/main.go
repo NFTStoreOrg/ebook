@@ -4,11 +4,9 @@ import (
 	"log"
 
 	"github.com/gin-gonic/gin"
-	"go.mongodb.org/mongo-driver/mongo"
 	"yisinnft.org/m/v2/routers"
 )
 
-var client *mongo.Client
 
 func main() {
 	//	Initial API information

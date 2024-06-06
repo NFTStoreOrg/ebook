@@ -18,9 +18,9 @@ type RentController struct {
 }
 
 func (con RentController) RentBook(ctx *gin.Context) {
-	bookIdStr := ctx.PostForm("bookId")
+	bookIdStr := ctx.Param("bookId")
 	timeStr := ctx.PostForm("time")
-	renter := ctx.PostForm("renter") //	未來要傳給api的參數，告訴他是誰要借書
+	renter := ctx.Param("address") //	未來要傳給api的參數，告訴他是誰要借書
 	_ = renter
 
 	bookId := new(big.Int)
@@ -82,7 +82,7 @@ func (con RentController) RentBook(ctx *gin.Context) {
 }
 
 func (con RentController) ReturnBook(ctx *gin.Context) {
-	bookIdStr := ctx.PostForm("bookId")
+	bookIdStr := ctx.Param("id")
 	addressStr := ctx.PostForm("address")
 
 	_ = addressStr

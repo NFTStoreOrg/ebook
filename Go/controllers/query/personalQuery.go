@@ -7,10 +7,13 @@ import (
 	"io"
 	"math/big"
 	"net/http"
+	"strconv"
 	"sync"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -65,7 +68,7 @@ func (con QueryPersonalController) GetPersonalRentedBook(ctx *gin.Context) {
 	addressStr := ctx.Param("address")
 
 	//	Use moralis api to get personal nft
-	url := fmt.Sprintf("https://deep-index.moralis.io/api/v2.2/%s/nft?chain=sepolia&format=decimal&token_addresses%%5B0%%5D=0x62495223E379b2C752081d1dFd2D58C2B8E62Ec5&media_items=false", addressStr)
+	url := fmt.Sprintf("https://deep-index.moralis.io/api/v2.2/%s/nft?chain=sepolia&format=decimal&token_addresses%%5B0%%5D=0x790e48C4F57F4415b9Aed58157A6A8436ea094A6&media_items=false", addressStr)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -85,25 +88,77 @@ func (con QueryPersonalController) GetPersonalRentedBook(ctx *gin.Context) {
 	defer res.Body.Close()
 	body, _ := io.ReadAll(res.Body)
 
-	// Use json.Unmarshal, change json(body) to map(result)
+	// Use json.Unmarshal, analyze body(json) to result(gin.H)
 	var result gin.H
 	json.Unmarshal(body, &result)
 
-	// extract token_id and metadata
+	// extract token_id
 	items := result["result"].([]interface{})
-	var extractedItems []gin.H
+	var extractedItems []int64
 	for _, item := range items {
-		itemMap := item.(gin.H)
+		itemMap := item.(map[string]interface{})
 		tokenID := itemMap["token_id"].(string)
-		metadata := itemMap["metadata"].(string)
-		extractedItems = append(extractedItems, gin.H{
-			"token_id": tokenID,
-			"metadata": metadata,
-		})
+		tokenid, _ := strconv.ParseInt(tokenID, 10, 64)
+		extractedItems = append(extractedItems, tokenid)
 	}
 
-	// Return message after extract
-	ctx.JSON(http.StatusOK, extractedItems)
+	db := con.DB.Database("ebook")
+
+	collections, err := db.ListCollectionNames(context.TODO(), bson.M{})
+	if err != nil {
+		ctx.JSON(http.StatusBadGateway, gin.H{
+			"error": "Failing when search collections",
+		})
+		return
+	}
+
+	bookChannel := make(chan Book)
+	books := make([]Book, 0)
+	go func() {
+		for book := range bookChannel {
+			books = append(books, book)
+		}
+	}()
+
+	var wg sync.WaitGroup
+
+	for _, collName := range collections {
+		wg.Add(1)
+
+		go func(collName string) {
+			defer wg.Done()
+
+			coll := db.Collection(collName)
+			//	Find tokenId in extractedItems
+			filter := bson.M{"tokenId": bson.M{"$in": extractedItems}}
+
+			cur, _ := coll.Find(context.TODO(), filter)
+			if cur == nil {
+				return
+			}
+
+			for cur.Next(context.TODO()) {
+				var result Book
+				err = cur.Decode(&result)
+				if err != nil {
+					ctx.JSON(http.StatusInternalServerError, gin.H{
+						"error": "Fail occur while decoding result",
+					})
+					return
+				}
+				bookChannel <- result
+			}
+
+			cur.Close(context.TODO())
+		}(collName)
+	}
+	wg.Wait()
+	close(bookChannel)
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": books,
+	})
+
 }
 
 func (con QueryPersonalController) GetPersonalPublish(ctx *gin.Context) {
@@ -162,4 +217,85 @@ func (con QueryPersonalController) GetPersonalPublish(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"data": books,
 	})
+}
+
+func (con QueryPersonalController) GetBookFile(ctx *gin.Context){
+
+}
+
+func (con QueryPersonalController) VerifySignatureMiddleWare(ctx *gin.Context) {
+	signature := ctx.Param("signature")
+	publicKey := ctx.Param("address")
+
+	publicKeyByte, err := hexutil.Decode(publicKey)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "Error occur while decode public key",
+		})
+		return
+	}
+
+	signatureByte, err := hexutil.Decode(signature)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "Error occur while decode signature",
+		})
+		return
+	}
+
+	data := []byte(`Welcome to YiSin ebook store!
+	
+Click to verify that you own this wallet and have control over it.
+
+YiSin ebook (https://yisinnft.org/ebook) need to confirm whether you have the permission to read the e-book file.
+
+This request will not trigger a blockchain transaction or cost any gas fees.`)
+
+	hash := crypto.Keccak256Hash(data)
+
+	signatureNoRecoverID := signatureByte[:len(signatureByte)-1]
+
+	verified := crypto.VerifySignature(publicKeyByte, hash.Bytes(), signatureNoRecoverID)
+
+	if !verified {
+		ctx.JSON(http.StatusForbidden, gin.H{
+			"error": "Signature verify fail",
+		})
+		return
+	}
+	ctx.Next()
+}
+
+func (con QueryPersonalController) CheckPermissionToAccessFileMiddleWare(ctx *gin.Context) {
+	publicKey := ctx.Param("address")
+	tokenIdStr := ctx.Param("id")
+
+	address := common.HexToAddress(publicKey)
+
+	tokenIdBigInt := new(big.Int)
+	tokenIdBigInt, ok := tokenIdBigInt.SetString(tokenIdStr, 10)
+	if !ok {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "Transform tokenId error",
+		})
+		return
+	}
+
+	addressHaveTokenId, err := con.Instance.IsAddressHaveTokenId(nil, address, tokenIdBigInt)
+	if err != nil {
+		ctx.JSON(http.StatusBadGateway, gin.H{
+			"error":   "Error occur while check blockchain information",
+			"message": err.Error(),
+		})
+		return
+	}
+
+	if addressHaveTokenId{
+		ctx.Next()
+	} else {
+		ctx.JSON(http.StatusForbidden, gin.H{
+			"error": "You not have this book's NFT, please borrow it first",
+		})
+		return
+	}
 }
