@@ -15,11 +15,14 @@ function handleScroll() {
     scrollDown.value.classList.remove('bg-slate-100');
   }
 }
+function loginClick() {
+
+}
 </script>
 
 <template>
   <div class="bg-white w-screen">
-    <header class="fixed inset-x-0 top-0 z-50 bg-opacity-[90%]" ref="scrollDown">
+    <header class="fixed inset-x-0 top-0 z-10 bg-opacity-[90%]" ref="scrollDown">
       <nav class="flex items-center justify-between p-6 lg:px-8">
         <div class="flex font-bold text-gray-400">
           EBOOK STORE
@@ -38,7 +41,8 @@ function handleScroll() {
         </div>
 
         <div class="flex">
-          <a class="text-sm font-semibold text-gray-900">Log in <span aria-hidden="true">&rarr;</span></a>
+          <a class="text-sm font-semibold text-gray-900 cursor-pointer" @click="loginClick">Log in <span
+              aria-hidden="true">&rarr;</span></a>
         </div>
       </nav>
       <!-- Mobile menu, show/hide based on menu open state. -->
@@ -85,7 +89,7 @@ function handleScroll() {
         </div>
       </div>
       <div class="absolute inset-x-0 top-20">
-        <RouterView></RouterView>
+        <RouterView @loginClick="loginClick"></RouterView>
       </div>
       <!-- 漸層 -->
       <div

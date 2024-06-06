@@ -1,8 +1,6 @@
 <script setup lang="ts">
-// import { defineProps } from 'vue'
 import { useCardStore } from '../store/card'
 const cardStore = useCardStore()
-// defineProps<{ books: Object }>()
 </script>
 <template>
     <div v-for="book in cardStore.books"

@@ -16,6 +16,7 @@
     "flowbite": "^2.3.0",
     "install": "^0.13.0",
     "pinia": "^2.1.7",
+    "tailwindcss-animated": "^1.1.0",
     "vue": "^3.4.27",
     "vue-router": "^4.3.2"
   },
