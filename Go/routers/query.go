@@ -15,15 +15,16 @@ func QueryNFTInit(r *gin.Engine) {
 	queryBookApi := r.Group("/book")
 	{
 		queryBookApi.GET("/totalsupply", queryBookController.GetVarietyOfBook)
-		queryBookApi.GET("/information/:id", queryBookController.GetBookInformation)
+		queryBookApi.GET("/:id", queryBookController.GetBookInformation)
 		queryBookApi.GET("/remain/:id", queryBookController.GetBookRemaining)
-		queryBookApi.GET("/:class", queryBookController.GetClassOfBooks)
+		queryBookApi.GET("/page/:class", queryBookController.GetClassOfBooks)
 		queryBookApi.GET("/live", queryBookController.GetLiveBook)
 		queryBookApi.GET("/index/:class", queryBookController.GetClassOfTwentyBooksForIndex)
 		queryBookApi.GET("/index", queryBookController.GetNewestTwelveBookForIndex)
 	}
 	queryPersonalApi := r.Group("/:address")
 	{
+		queryPersonalApi.GET("/:id/:signature", queryPersonalController.VerifySignatureMiddleWare, queryPersonalController.CheckPermissionToAccessFileMiddleWare, queryPersonalController.GetBookFile)
 		queryPersonalApi.GET("/endtime/:id", queryPersonalController.GetRentBookEndTime)
 		queryPersonalApi.GET("/rentedbook", queryPersonalController.GetPersonalRentedBook)
 		queryPersonalApi.GET("/publish", queryPersonalController.GetPersonalPublish)
