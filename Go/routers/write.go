@@ -11,8 +11,10 @@ func UploadInit(r *gin.Engine) {
 
 	uploadController := write.UploadController{Instance: instance, DB: db}
 	rentController := write.RentController{Instance: instance}
+	modifyController := write.ModifyController{DB: db}
 
 	r.POST("/book", uploadController.UploadEbook)
 	r.POST("/book/:id/:address", rentController.RentBook)
 	r.DELETE("/book/:id/:address", rentController.ReturnBook)
+	r.PATCH("/book/:id/:signature", modifyController.VerifySignatureMiddleWare, modifyController.AdjustBookInformation)
 }
