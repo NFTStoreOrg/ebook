@@ -30,7 +30,7 @@ const config: HardhatUserConfig = {
       accounts: process.env.KEY ? [process.env.KEY] : [],
     },
     'sepolia': {
-      url: 'http://211.75.24.92:8545/',
+      url: 'https://ethereum-sepolia-rpc.publicnode.com',
       chainId: 11155111,
       accounts: process.env.KEY ? [process.env.KEY] : [],
     },

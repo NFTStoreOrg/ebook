@@ -68,7 +68,7 @@ func (con QueryPersonalController) GetPersonalRentedBook(ctx *gin.Context) {
 	addressStr := ctx.Param("address")
 
 	//	Use moralis api to get personal nft
-	url := fmt.Sprintf("https://deep-index.moralis.io/api/v2.2/%s/nft?chain=sepolia&format=decimal&token_addresses%%5B0%%5D=0x790e48C4F57F4415b9Aed58157A6A8436ea094A6&media_items=false", addressStr)
+	url := fmt.Sprintf("https://deep-index.moralis.io/api/v2.2/%s/nft?chain=sepolia&format=decimal&token_addresses%%5B0%%5D=0xD658Ca5061B4e5bAbFAA49c70A52033dC1f98a78&media_items=false", addressStr)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -219,7 +219,7 @@ func (con QueryPersonalController) GetPersonalPublish(ctx *gin.Context) {
 	})
 }
 
-func (con QueryPersonalController) GetBookFile(ctx *gin.Context){
+func (con QueryPersonalController) GetBookFile(ctx *gin.Context) {
 
 }
 
@@ -230,7 +230,7 @@ func (con QueryPersonalController) VerifySignatureMiddleWare(ctx *gin.Context) {
 	publicKeyByte, err := hexutil.Decode(publicKey)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": "Error occur while decode public key",
+			"error": err.Error(),
 		})
 		return
 	}
@@ -238,7 +238,7 @@ func (con QueryPersonalController) VerifySignatureMiddleWare(ctx *gin.Context) {
 	signatureByte, err := hexutil.Decode(signature)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": "Error occur while decode signature",
+			"error": err.Error(),
 		})
 		return
 	}
@@ -290,7 +290,7 @@ func (con QueryPersonalController) CheckPermissionToAccessFileMiddleWare(ctx *gi
 		return
 	}
 
-	if addressHaveTokenId{
+	if addressHaveTokenId {
 		ctx.Next()
 	} else {
 		ctx.JSON(http.StatusForbidden, gin.H{

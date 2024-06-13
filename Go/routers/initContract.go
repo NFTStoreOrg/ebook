@@ -20,7 +20,7 @@ func InitInstance() {
 		if err != nil {
 			log.Fatal(err)
 		}
-		address := common.HexToAddress("0x790e48C4F57F4415b9Aed58157A6A8436ea094A6")
+		address := common.HexToAddress("0xD658Ca5061B4e5bAbFAA49c70A52033dC1f98a78")
 		inst, err := ebook.NewYiSinEBook(address, client)
 		if err != nil {
 			log.Fatal(err)

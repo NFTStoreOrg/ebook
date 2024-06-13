@@ -39,6 +39,7 @@ type Book struct {
 	Writer       string  `bson:"writer,omitempty" json:"writer"`
 	TokenId      int64   `bson:"tokenId,omitempty" json:"tokenId"`
 	UploadTime   int64   `bson:"uploadTime,omitempty" json:"upload_time"`
+	CoverImage   string  `bson:"coverImage" json:"cover_image"`
 }
 
 type Class struct {
@@ -347,6 +348,6 @@ func (con QueryBookController) GetLiveBook(ctx *gin.Context) {
 	close(booksChannel)
 
 	ctx.JSON(http.StatusOK, gin.H{
-		"data":books,
+		"data": books,
 	})
 }

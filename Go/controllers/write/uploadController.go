@@ -70,7 +70,7 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 	if err1 != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"upload_status": false,
-			"error":         "Price transform fail",
+			"error":         err1.Error(),
 		})
 		return
 	}
@@ -84,7 +84,7 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 	if err2 != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"upload_status": false,
-			"error":         "Pages transform fail",
+			"error":         err2.Error(),
 		})
 		return
 	}
@@ -100,17 +100,6 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 		return
 	}
 
-	//	Address for contract send
-	address := common.HexToAddress(uploader)
-	file, err3 := ctx.FormFile("book")
-	if err3 != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"upload_status": false,
-			"error":         "File error",
-		})
-		return
-	}
-
 	live, err := strconv.ParseBool(liveStr)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -118,6 +107,19 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 			"error":         "Live tranform fail",
 		})
 	}
+
+	//	Address for contract send
+	address := common.HexToAddress(uploader)
+	
+	file, err3 := ctx.FormFile("bookCover")
+	if err3 != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"upload_status": false,
+			"error":         err3.Error(),
+		})
+		return
+	}
+
 	//	Verify file format
 	extName := path.Ext(file.Filename)
 	//	Set allow file extention
@@ -163,25 +165,6 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 		return
 	}
 
-	//	Using goroutine to asynchronously execute blockchain upload books
-	//	Struct for blockchain result
-	type Result struct {
-		TransactionMessage *types.Transaction
-		Error              error
-	}
-	//	Channel to receive the result
-	ch := make(chan Result)
-	//	Call pravite function to upload to blockchain.
-	go func() {
-		tx, err := con.uploadToBlockchain(amount, address, weiValue, maxRentTime)
-
-		if tx == nil {
-			ch <- Result{nil, err}
-			return
-		}
-		ch <- Result{tx, nil}
-	}()
-
 	//	Write metadata to database
 	metaData := gin.H{
 		"title":        title,
@@ -212,26 +195,23 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 	if err4 != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{
 			"upload_status": false,
-			"error":         "Write in database error",
+			"error":         err4.Error(),
 		})
 		return
 	}
 
-	//	Process blockchain error.
-	res := <-ch
-	if res.Error != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"upload_status":    false,
-			"blockchain_error": res.Error,
-		})
-		return
-	} else {
-		tx := res.TransactionMessage
-		ctx.JSON(http.StatusOK, gin.H{
-			"upload_status": true,
-			"tx_hash":       tx.Hash().Hex(),
+	tx, err := con.uploadToBlockchain(amount, address, weiValue, maxRentTime)
+	if err != nil {
+		ctx.JSON(http.StatusBadGateway, gin.H{
+			"error":   err.Error(),
+			"message": "Error while mint NFT",
 		})
 	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"upload_status": true,
+		"tx_hash":       tx.Hash().Hex(),
+	})
 
 }
 

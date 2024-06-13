@@ -45,6 +45,7 @@ func (con ModifyController) AdjustBookInformation(ctx *gin.Context) {
 			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
 		}
+		//	If update one data, break for loop
 		if result.ModifiedCount > 0 {
 			ctx.JSON(http.StatusOK, gin.H{"message": "Update successfully"})
 			return
