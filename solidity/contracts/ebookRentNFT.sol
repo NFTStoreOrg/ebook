@@ -15,7 +15,7 @@ import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/autom
 contract YiSinEBook is ERC1155, ERC1155Pausable, Ownable, ReentrancyGuard {
     uint256 constant DECIMALS = 3; //  10^3
     uint256 constant DECIMAL_FACTOR = 10 ** DECIMALS;
-    uint256 public fee = 30; //  Marketplace fee（fee/1000）
+    uint256 public fee = 50; //  Marketplace fee（fee/1000）
     struct BookInfo {
         address writer;
         uint256 supplyAmount;

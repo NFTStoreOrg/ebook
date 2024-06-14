@@ -222,6 +222,39 @@ func (con QueryPersonalController) GetPersonalPublish(ctx *gin.Context) {
 func (con QueryPersonalController) GetBookFile(ctx *gin.Context) {
 
 }
+func (con QueryPersonalController) AddressHaveRentedBook(ctx *gin.Context) {
+	addressStr := ctx.Param("address")
+	idStr := ctx.Param("id")
+
+	address := common.HexToAddress(addressStr)
+
+	tokenId := new(big.Int)
+	tokenId, ok := tokenId.SetString(idStr, 10)
+	if !ok {
+		ctx.JSON(http.StatusBadRequest,gin.H{
+			"error": "Transform tokenId fail",
+		})
+		return
+	}
+
+	isRented, err := con.Instance.IsAddressHaveTokenId(nil, address,tokenId)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest,gin.H{
+			"error":err.Error(),
+		})
+	}
+
+	if !isRented {
+		ctx.JSON(http.StatusOK,gin.H{
+			"rentStatus": false,
+		})
+	} else {
+		ctx.JSON(http.StatusOK,gin.H{
+			"rentStatus":true,
+		})
+	}
+
+}
 
 func (con QueryPersonalController) VerifySignatureMiddleWare(ctx *gin.Context) {
 	signature := ctx.Param("signature")

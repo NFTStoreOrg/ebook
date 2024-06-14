@@ -27,6 +27,7 @@ func QueryNFTInit(r *gin.Engine) {
 		queryPersonalApi.GET("/endtime/:id", queryPersonalController.GetRentBookEndTime)
 		queryPersonalApi.GET("/rentedbook", queryPersonalController.GetPersonalRentedBook)
 		queryPersonalApi.GET("/publish", queryPersonalController.GetPersonalPublish)
+		queryPersonalApi.GET("/:id/read", queryPersonalController.AddressHaveRentedBook)
 		queryPersonalApi.GET("/:id/:signature", queryPersonalController.VerifySignatureMiddleWare, queryPersonalController.CheckPermissionToAccessFileMiddleWare, queryPersonalController.GetBookFile)
 	}
 }

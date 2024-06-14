@@ -110,7 +110,7 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 
 	//	Address for contract send
 	address := common.HexToAddress(uploader)
-	
+
 	file, err3 := ctx.FormFile("bookCover")
 	if err3 != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
@@ -120,16 +120,36 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 		return
 	}
 
+	bookFile, err := ctx.FormFile("book")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"upload_status": false,
+			"error":         err.Error(),
+		})
+		return
+	}
+
 	//	Verify file format
 	extName := path.Ext(file.Filename)
+	bookExtName := path.Ext(bookFile.Filename)
 	//	Set allow file extention
 	allowExtMap := map[string]bool{
 		".jpg":  true,
+		".JPG":  true,
 		".png":  true,
 		".jpeg": true,
+		".JPEG": true,
 		".PNG":  true,
+		".tiff": true,
 	}
-
+	allowBookExtMap := map[string]bool{
+		".pdf":  true,
+		".PDF":  true,
+		".epub": true,
+		".txt":  true,
+		".mp4":  true,
+	}
+	//	Check file format
 	if _, ok := allowExtMap[extName]; !ok {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"upload_status": false,
@@ -137,20 +157,33 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 		})
 		return
 	}
-	//	Get this book's tokenId to
-	tokenId, err6 := con.Instance.TotalSupplyBook(nil)
-	if err6 != nil {
+	if _, ok := allowBookExtMap[bookExtName]; !ok {
 		ctx.JSON(http.StatusBadRequest, gin.H{
-			"upload_status": false,
-			"error":         "Get tokenId fail",
+			"upload_status": true,
+			"error":         "Invalid file type",
 		})
 		return
 	}
-	// tokenId = tokenId.Sub(tokenId, big.NewInt(1))
+
+	//	Get this book's tokenId to
+	tokenId, err6 := con.Instance.TotalSupplyBook(nil)
+	if err6 != nil {
+		ctx.JSON(http.StatusBadGateway, gin.H{
+			"upload_status": false,
+			"error":         err6.Error(),
+		})
+		return
+	}
 	tokenIdStr := tokenId.String()
+
 	//	Generate file's path and name
 	dst := path.Join("./static/upload", tokenIdStr+extName)
+	bookDst := path.Join("./static/bookfile", tokenIdStr+bookExtName)
+
+	//	Save file
 	ctx.SaveUploadedFile(file, dst)
+	ctx.SaveUploadedFile(bookFile, bookDst)
+
 	httpDst := "https://yisinnft.org/images/" + tokenIdStr + extName
 
 	tokenIdInt := tokenId.Int64()
@@ -160,7 +193,7 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 	if err7 != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{
 			"upload_status": false,
-			"error":         "Transform grade to int fail",
+			"error":         err7.Error(),
 		})
 		return
 	}
@@ -171,7 +204,7 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 		"writer":       writer,
 		"publisher":    publisher,
 		"publishDate":  publishDate,
-		"ISBN":         isbn,
+		"EISBN":         isbn,
 		"introduction": introduction,
 		"chapter":      chapter,
 		"maxRentTime":  maxRentTimeInt,
