@@ -8,4 +8,4 @@ import 'bootstrap/dist/css/bootstrap.css'
 const app = createApp(App)
 const pinia = createPinia()
 
-app.use(router).use(BootstrapVue).use(pinia).mount("#app")
+app.use(pinia).use(BootstrapVue).use(router).mount("#app")
