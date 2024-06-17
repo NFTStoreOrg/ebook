@@ -144,18 +144,20 @@ const handleBackgroundClick = (event: any) => {
     }, 300);
   }
 };
-
-
 var scrollDown = ref()
 
 window.addEventListener("scroll", handleScroll);
 function handleScroll() {
-  if (window.scrollY >= 200) {
-    scrollDown.value.classList.add('bg-slate-100');
-  } else {
-    scrollDown.value.classList.remove('bg-slate-100');
+  if (showStore.showHeader == true) {
+    if (window.scrollY >= 200) {
+      scrollDown.value.classList.add('bg-slate-100');
+    } else {
+      scrollDown.value.classList.remove('bg-slate-100');
+    }
   }
 }
+
+
 
 
 </script>

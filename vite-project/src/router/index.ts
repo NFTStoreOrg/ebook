@@ -2,8 +2,10 @@ import {createRouter,createWebHistory} from 'vue-router'
 import Main from '../pages/Main.vue'
 import ReferenceBook from '../pages/ReferenceBook.vue'
 import Account from '../pages/Account.vue'
-import { useShowStore } from '../store/show.ts'
+import posted from '../account_page/posted.vue'
+import renting from '../account_page/renting.vue'
 
+import { useShowStore } from '../store/show.ts'
 const router=createRouter({
     history:createWebHistory(),
     routes:[
@@ -26,12 +28,16 @@ const router=createRouter({
         { 
             path:'/Account',
             component: Account,
+            children: [
+                { path:'/posted' , component: posted},
+                { path:'/renting' , component: renting}
+              ],
         },
     ]
 })
 router.beforeEach((to, from) => {
     const showStore = useShowStore()
-    if(to.fullPath!='/Account'){
+    if(to.fullPath!='/Account' && to.fullPath!='/posted'&&to.fullPath!='/renting'){
         showStore.showHeader=true
     }
 })
