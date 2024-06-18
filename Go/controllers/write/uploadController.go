@@ -65,6 +65,15 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 		})
 		return
 	}
+
+	isbnValid := checkISBNValid(isbn)
+	if !isbnValid {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": "Invalid isbn value",
+		})
+		return
+	}
+
 	// Transform price(string) to price(float)
 	price, err1 := strconv.ParseFloat(priceStr, 64)
 	if err1 != nil {
@@ -204,7 +213,7 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 		"writer":       writer,
 		"publisher":    publisher,
 		"publishDate":  publishDate,
-		"EISBN":         isbn,
+		"EISBN":        isbn,
 		"introduction": introduction,
 		"chapter":      chapter,
 		"maxRentTime":  maxRentTimeInt,
@@ -295,4 +304,38 @@ func (con UploadController) uploadToBlockchain(amount *big.Int, uploader common.
 	}
 
 	return tx, nil
+}
+
+func checkISBNValid(isbn string) bool {
+	//	Use ISBN-13
+	if len(isbn) != 13 {
+		return false
+	}
+
+	sum := 0
+	lastCode := 0
+	for i, digit := range isbn {
+		if i == 12 {
+			lastCode, _ = strconv.Atoi(string(digit))
+		} else if i%2 == 0 {
+			digit, _ := strconv.Atoi(string(digit))
+			sum += digit
+		} else {
+			digit, _ := strconv.Atoi(string(digit))
+			sum += 3 * digit
+		}
+	}
+
+	valid := checkCode(lastCode, sum)
+	return valid
+}
+
+func checkCode(lastCode int, sum int) bool {
+	checkSum := sum % 10
+	if checkSum == 0 {
+		return lastCode == checkSum
+	}
+
+	code := 10 - checkSum
+	return lastCode == code
 }

@@ -9,7 +9,6 @@ import (
 	"yisinnft.org/m/v2/routers"
 )
 
-
 func main() {
 	//	Initial API information
 	r := gin.Default()
@@ -23,16 +22,15 @@ func main() {
 
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:5173"},
-        AllowMethods:     []string{"POST", "GET", "DELETE", "PATCH"},
-        AllowHeaders:     []string{"Content-Type"},
-        AllowCredentials: true,
-        MaxAge:           12 * time.Hour,
+		AllowMethods:     []string{"POST", "GET", "DELETE", "PATCH", "PUT"},
+		AllowHeaders:     []string{"Content-Type"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
 	}))
-	
+
 	//	Initial routers
 	routers.QueryNFTInit(r)
 	routers.UploadInit(r)
 
 	r.Run(":8080")
 }
-

@@ -153,6 +153,48 @@ func (con QueryBookController) GetClassOfBooks(ctx *gin.Context) {
 
 }
 
+func (con QueryBookController) GetTextbookGrade(ctx *gin.Context) {
+	gradeStr := ctx.Param("grade")
+
+	grade, err := strconv.Atoi(gradeStr)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	collection := con.DB.Database("ebook").Collection("textbook")
+
+	filter := bson.M{"class.grade": grade}
+
+	cur, err := collection.Find(context.TODO(), filter)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"error": err.Error(),
+		})
+	}
+	defer cur.Close(context.TODO())
+
+	var results []Book
+
+	for cur.Next(context.TODO()) {
+		var result Book
+		err := cur.Decode(&result)
+		if err != nil {
+			ctx.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+		}
+
+		results = append(results, result)
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": results,
+	})
+}
+
 func (con QueryBookController) GetClassOfTwentyBooksForIndex(ctx *gin.Context) {
 	class := ctx.Param("class")
 
