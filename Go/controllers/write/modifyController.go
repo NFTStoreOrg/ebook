@@ -24,14 +24,14 @@ func (con ModifyController) AdjustBookInformation(ctx *gin.Context) {
 	//	Use json format receive data
 	var updateData map[string]interface{}
 	if err := ctx.BindJSON(&updateData); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		ctx.String(http.StatusBadRequest, err.Error())
 		return
 	}
 
 	db := con.DB.Database("ebook")
 	collections, err := db.ListCollectionNames(context.Background(), bson.D{})
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		ctx.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -42,7 +42,7 @@ func (con ModifyController) AdjustBookInformation(ctx *gin.Context) {
 
 		result, err := collection.UpdateOne(context.Background(), filter, update)
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			ctx.String(http.StatusInternalServerError, err.Error())
 			return
 		}
 		//	If update one data, break for loop
@@ -52,7 +52,7 @@ func (con ModifyController) AdjustBookInformation(ctx *gin.Context) {
 		}
 	}
 
-	ctx.JSON(http.StatusNotFound, gin.H{"message": "TokenId not found"})
+	ctx.String(http.StatusNotFound, "TokenId not found")
 }
 
 func (con ModifyController) VerifySignatureMiddleWare(ctx *gin.Context) {
@@ -61,9 +61,7 @@ func (con ModifyController) VerifySignatureMiddleWare(ctx *gin.Context) {
 
 	signatureByte, err := hexutil.Decode(signature)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		ctx.String(http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -80,18 +78,14 @@ This request will not trigger a blockchain transaction or cost any gas fees.`)
 
 	id, err := strconv.Atoi(idstr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		ctx.String(http.StatusBadRequest, err.Error())
 		return
 	}
 
 	db := con.DB.Database("ebook")
 	collections, err := db.ListCollectionNames(context.TODO(), bson.M{})
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		ctx.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -109,27 +103,21 @@ This request will not trigger a blockchain transaction or cost any gas fees.`)
 	}
 
 	if !found {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": "No book found with the given tokenId",
-		})
+		ctx.String(http.StatusBadRequest, "No book found with the given tokenId")
 		return
 	}
 
 	address := book.Uploader
 	publicKeyByte, err := hexutil.Decode(address)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		ctx.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	verified := crypto.VerifySignature(publicKeyByte, hash.Bytes(), signatureNoRecoverID)
 
 	if !verified {
-		ctx.JSON(http.StatusForbidden, gin.H{
-			"error": "Signature verify fail",
-		})
+		ctx.String(http.StatusForbidden, "Signature verify fail")
 		return
 	}
 	ctx.Next()

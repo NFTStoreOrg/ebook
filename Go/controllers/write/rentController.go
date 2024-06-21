@@ -27,10 +27,8 @@ func (con RentController) RentBook(ctx *gin.Context) {
 	var ok bool
 	bookId, ok = bookId.SetString(bookIdStr, 10)
 	if !ok {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"rent_status": false,
-			"error":       "BookId transform fail.",
-		})
+		ctx.String(http.StatusBadRequest, "BookId transform fail.")
+		return
 	}
 	info, _ := con.Instance.BookInfos(nil, bookId)
 	price := info.RentPrice
@@ -39,17 +37,11 @@ func (con RentController) RentBook(ctx *gin.Context) {
 	time := new(big.Int)
 	time, ok1 := time.SetString(timeStr, 10)
 	if !ok1 {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"rent_status": false,
-			"error":       "Transform time fail",
-		})
+		ctx.String(http.StatusBadRequest, "Transform time fail")
 		return
 	}
 	if time.Cmp(maxTime) == 1 {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"rent_status": false,
-			"error":       "Time exceed max rent time",
-		})
+		ctx.String(http.StatusBadRequest, "Time exceed max rent time")
 
 		return
 	}
@@ -57,21 +49,14 @@ func (con RentController) RentBook(ctx *gin.Context) {
 	apiPrivateKey := ""
 	privateKey, err := crypto.HexToECDSA(apiPrivateKey)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"rent_status": false,
-			"error":       "Get private key fail",
-		})
+		ctx.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 	auth := getTransactionAuth(privateKey, price, ctx)
 
-	tx, err5 := con.Instance.RentBook(auth, bookId, time)
-	if err5 != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{
-			"rent_status": false,
-			"error":       err5.Error(),
-			"message":     "Failing while rent a book on the blockchain",
-		})
+	tx, err := con.Instance.RentBook(auth, bookId, time)
+	if err != nil {
+		ctx.String(http.StatusBadGateway, err.Error())
 		return
 	}
 	txHash := tx.Hash().Hex()
@@ -92,10 +77,7 @@ func (con RentController) ReturnBook(ctx *gin.Context) {
 	bookIdBig, ok := bookIdBig.SetString(bookIdStr, 10)
 
 	if !ok {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"return_status": false,
-			"error":         "Transform bookId fail",
-		})
+		ctx.String(http.StatusBadRequest, "Transform bookId fail")
 		return
 	}
 
@@ -104,10 +86,7 @@ func (con RentController) ReturnBook(ctx *gin.Context) {
 	privateKey, err := crypto.HexToECDSA(apiPrivateKey)
 
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"return_status": false,
-			"error":         "Get privateKey error",
-		})
+		ctx.String(http.StatusInternalServerError, err.Error())
 	}
 
 	auth := getTransactionAuth(privateKey, big.NewInt(0), ctx)
@@ -117,11 +96,7 @@ func (con RentController) ReturnBook(ctx *gin.Context) {
 
 	tx, err := con.Instance.ReturnBook(auth, bookIdBig)
 	if err != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{
-			"return_status": false,
-			"error":         err.Error(),
-			"message":       "Failing while trade on blockchain",
-		})
+		ctx.String(http.StatusBadGateway, err.Error())
 		return
 	}
 
@@ -134,12 +109,9 @@ func (con RentController) ReturnBook(ctx *gin.Context) {
 
 func getTransactionAuth(privateKey *ecdsa.PrivateKey, price *big.Int, ctx *gin.Context) *bind.TransactOpts {
 	//	Get node client
-	client, err1 := ethclient.Dial("https://ethereum-sepolia-rpc.publicnode.com")
-	if err1 != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"rent_status": false,
-			"error":       "Get ETH client fail",
-		})
+	client, err := ethclient.Dial("https://ethereum-sepolia-rpc.publicnode.com")
+	if err != nil {
+		ctx.String(http.StatusInternalServerError, err.Error())
 		return nil
 	}
 
@@ -147,39 +119,27 @@ func getTransactionAuth(privateKey *ecdsa.PrivateKey, price *big.Int, ctx *gin.C
 	publicKey := privateKey.Public()
 	publicKeyECDSA, ok := publicKey.(*ecdsa.PublicKey)
 	if !ok {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"rent_status": false,
-			"error":       "cannot assert type: publicKey is not of type *ecdsa.PublicKey",
-		})
+		ctx.String(http.StatusInternalServerError, "cannot assert type: publicKey is not of type *ecdsa.PublicKey")
 		return nil
 	}
 	fromAddress := crypto.PubkeyToAddress(*publicKeyECDSA)
 	//	Get nonce and gas price.
-	nonce, err2 := client.PendingNonceAt(context.Background(), fromAddress)
-	if err2 != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"rent_status": false,
-			"error":       "Get nonce fail",
-		})
+	nonce, err := client.PendingNonceAt(context.Background(), fromAddress)
+	if err != nil {
+		ctx.String(http.StatusInternalServerError, err.Error())
 		return nil
 	}
-	gasPrice, err3 := client.SuggestGasPrice(context.Background())
-	if err3 != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"rent_status": false,
-			"error":       "Get gas price fail",
-		})
+	gasPrice, err := client.SuggestGasPrice(context.Background())
+	if err != nil {
+		ctx.String(http.StatusInternalServerError, err.Error())
 		return nil
 	}
 
 	//	Set chain id and new an auth
 	chainID := big.NewInt(11155111)
-	auth, err4 := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
-	if err4 != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"rent_status": false,
-			"error":       "Get transaction auth fail",
-		})
+	auth, err := bind.NewKeyedTransactorWithChainID(privateKey, chainID)
+	if err != nil {
+		ctx.String(http.StatusInternalServerError, err.Error())
 		return nil
 	}
 

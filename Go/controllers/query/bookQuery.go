@@ -2,7 +2,6 @@ package query
 
 import (
 	"context"
-	"fmt"
 	"math/big"
 	"net/http"
 	"sync"
@@ -39,7 +38,7 @@ type Book struct {
 	Writer       string  `bson:"writer,omitempty" json:"writer"`
 	TokenId      int64   `bson:"tokenId,omitempty" json:"tokenId"`
 	UploadTime   int64   `bson:"uploadTime,omitempty" json:"upload_time"`
-	CoverImage   string  `bson:"coverImage" json:"cover_image"`
+	CoverImage   string  `bson:"coverImage,onmitempty" json:"cover_image"`
 }
 
 type Class struct {
@@ -59,18 +58,14 @@ func (con QueryBookController) GetBookInformation(ctx *gin.Context) {
 
 	id, err := strconv.Atoi(idstr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": "Transform id fail",
-		})
+		ctx.String(http.StatusBadRequest, err.Error())
 		return
 	}
 
 	db := con.DB.Database("ebook")
 	collections, err := db.ListCollectionNames(context.TODO(), bson.M{})
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Get collection fail",
-		})
+		ctx.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 	var book Book
@@ -87,9 +82,7 @@ func (con QueryBookController) GetBookInformation(ctx *gin.Context) {
 	}
 
 	if !found {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": "No book found with the given tokenId",
-		})
+		ctx.String(http.StatusBadRequest, "No book found with the given tokenId")
 		return
 	}
 
@@ -104,7 +97,7 @@ func (con QueryBookController) GetBookRemaining(ctx *gin.Context) {
 	idBigInt, ok := new(big.Int).SetString(idstr, 10)
 	//	Test id correct
 	if !ok {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		ctx.String(http.StatusBadRequest, "Invalid ID")
 	}
 	amount, _ := con.Instance.BooksOnRent(nil, idBigInt)
 	info, _ := con.Instance.BookInfos(nil, idBigInt)
@@ -125,27 +118,23 @@ func (con QueryBookController) GetClassOfBooks(ctx *gin.Context) {
 	//	Attempt to find data
 	cur, err := collection.Find(context.Background(), bson.D{{}})
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": err,
-		})
+		ctx.String(http.StatusBadRequest, err.Error())
 		return
 	}
+	defer cur.Close(context.Background())
+
 	var results []Book
 
 	for cur.Next(context.Background()) {
 		var result Book
 		err := cur.Decode(&result)
 		if err != nil {
-			fmt.Println(err.Error())
-			ctx.JSON(http.StatusBadRequest, gin.H{
-				"error": "Failing while decode result",
-			})
+			ctx.String(http.StatusBadRequest, err.Error())
 			return
 		}
 
 		results = append(results, result)
 	}
-	defer cur.Close(context.Background())
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"data": results,
@@ -158,9 +147,7 @@ func (con QueryBookController) GetTextbookGrade(ctx *gin.Context) {
 
 	grade, err := strconv.Atoi(gradeStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		ctx.String(http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -170,9 +157,7 @@ func (con QueryBookController) GetTextbookGrade(ctx *gin.Context) {
 
 	cur, err := collection.Find(context.TODO(), filter)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		ctx.String(http.StatusInternalServerError, err.Error())
 	}
 	defer cur.Close(context.TODO())
 
@@ -182,9 +167,7 @@ func (con QueryBookController) GetTextbookGrade(ctx *gin.Context) {
 		var result Book
 		err := cur.Decode(&result)
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{
-				"error": err.Error(),
-			})
+			ctx.String(http.StatusInternalServerError, err.Error())
 		}
 
 		results = append(results, result)
@@ -208,9 +191,7 @@ func (con QueryBookController) GetClassOfTwentyBooksForIndex(ctx *gin.Context) {
 	var results []Book
 	cur, err := collection.Find(context.TODO(), bson.D{{}}, findOptions)
 	if err != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{
-			"error": "Error occur while searching data",
-		})
+		ctx.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -220,10 +201,7 @@ func (con QueryBookController) GetClassOfTwentyBooksForIndex(ctx *gin.Context) {
 		var result Book
 		err := cur.Decode(&result)
 		if err != nil {
-			ctx.JSON(http.StatusInternalServerError, gin.H{
-				"error":   "Error while decoding data",
-				"message": err.Error(),
-			})
+			ctx.String(http.StatusInternalServerError, err.Error())
 		}
 		results = append(results, result)
 	}
@@ -238,9 +216,7 @@ func (con QueryBookController) GetNewestTwelveBookForIndex(ctx *gin.Context) {
 	db := con.DB.Database("ebook")
 	collections, err := db.ListCollectionNames(context.TODO(), bson.M{})
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failing when search collections",
-		})
+		ctx.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -263,20 +239,18 @@ func (con QueryBookController) GetNewestTwelveBookForIndex(ctx *gin.Context) {
 			defer wg.Done()
 			coll := db.Collection(collName)
 			//	Find every collection's newest 12 books
-			cur, _ := coll.Find(context.TODO(), bson.D{{}}, options.Find().SetSort(bson.D{{Key: "uploadTime", Value: -1}}).SetLimit(12))
+			cur, _ := coll.Find(context.Background(), bson.D{{}}, options.Find().SetSort(bson.D{{Key: "uploadTime", Value: -1}}).SetLimit(12))
 			if cur == nil {
 				return
 			}
-			defer cur.Close(context.TODO())
+			defer cur.Close(context.Background())
 
 			//	Decode result into book, and append to results
 			var results []Book
-			for cur.Next(context.TODO()) {
+			for cur.Next(context.Background()) {
 				var book Book
 				if err := cur.Decode(&book); err != nil {
-					ctx.JSON(http.StatusInternalServerError, gin.H{
-						"error": "Error occur while decoding data",
-					})
+					ctx.String(http.StatusInternalServerError, err.Error())
 					return
 				}
 				results = append(results, book)
@@ -308,15 +282,21 @@ func mergeSortedArrays(sortedArrays [][]Book) []Book {
 	//	Merge every book arrays until length of array is 1
 	for len(sortedArrays) > 1 {
 		var newSortedArrays [][]Book
+		var wg sync.WaitGroup
 		for i := 0; i < len(sortedArrays); i += 2 {
-			//	If this array is the last array, append to new arrays
-			if i == len(sortedArrays)-1 {
-				newSortedArrays = append(newSortedArrays, sortedArrays[i])
-			} else { //	Merge two array into one sorted array, and append to new arrays
-				merged := merge(sortedArrays[i], sortedArrays[i+1])
-				newSortedArrays = append(newSortedArrays, merged)
-			}
+			wg.Add(1)
+			go func(i int) {
+				defer wg.Done()
+				//	If this array is the last array, append to new arrays
+				if i == len(sortedArrays)-1 {
+					newSortedArrays = append(newSortedArrays, sortedArrays[i])
+				} else { //	Merge two array into one sorted array, and append to new arrays
+					merged := merge(sortedArrays[i], sortedArrays[i+1])
+					newSortedArrays = append(newSortedArrays, merged)
+				}
+			}(i)
 		}
+		wg.Wait()
 		sortedArrays = newSortedArrays
 	}
 
@@ -345,11 +325,9 @@ func merge(left, right []Book) []Book {
 
 func (con QueryBookController) GetLiveBook(ctx *gin.Context) {
 	db := con.DB.Database("ebook")
-	collections, err := db.ListCollectionNames(context.TODO(), bson.M{})
+	collections, err := db.ListCollectionNames(context.Background(), bson.M{})
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failing when search collections",
-		})
+		ctx.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -374,12 +352,10 @@ func (con QueryBookController) GetLiveBook(ctx *gin.Context) {
 				return
 			}
 
-			for cur.Next(context.TODO()) {
+			for cur.Next(context.Background()) {
 				var book Book
 				if err := cur.Decode(&book); err != nil {
-					ctx.JSON(http.StatusInternalServerError, gin.H{
-						"error": "Error occur while decoding data",
-					})
+					ctx.String(http.StatusInternalServerError, err.Error())
 					return
 				}
 				booksChannel <- book

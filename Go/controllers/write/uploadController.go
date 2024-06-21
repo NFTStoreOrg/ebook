@@ -51,36 +51,25 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 	var ok bool
 	amount, ok = amount.SetString(amountStr, 10)
 	if !ok {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"upload_status": false,
-			"error":         "Amount transform fail",
-		})
+		ctx.String(http.StatusBadRequest, "Amount transform fail")
 		return
 	}
 	//	if amount > 100
 	if amount.Cmp(big.NewInt(1000)) == 1 {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"upload_status": false,
-			"error":         "Amount exceed max supply 1000",
-		})
+		ctx.String(http.StatusBadRequest, "Amount exceed max supply 1000")
 		return
 	}
 
 	isbnValid := checkISBNValid(isbn)
 	if !isbnValid {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid isbn value",
-		})
+		ctx.String(http.StatusBadRequest, "Invalid isbn value")
 		return
 	}
 
 	// Transform price(string) to price(float)
-	price, err1 := strconv.ParseFloat(priceStr, 64)
-	if err1 != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"upload_status": false,
-			"error":         err1.Error(),
-		})
+	price, err := strconv.ParseFloat(priceStr, 64)
+	if err != nil {
+		ctx.String(http.StatusBadRequest, err.Error())
 		return
 	}
 	//	Price from eth to wei
@@ -89,12 +78,9 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 	ethPrice.Mul(ethPrice, big.NewFloat(params.Ether)).Int(weiValue)
 
 	//	Transform pages(string) to pages(int)
-	pages, err2 := strconv.Atoi(pagesStr)
-	if err2 != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"upload_status": false,
-			"error":         err2.Error(),
-		})
+	pages, err := strconv.Atoi(pagesStr)
+	if err != nil {
+		ctx.String(http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -102,39 +88,27 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 	maxRentTime := new(big.Int)
 	maxRentTime, ok1 := maxRentTime.SetString(maxRentTimeStr, 10)
 	if !ok1 {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"upload_status": false,
-			"error":         "MaxRentTime transform fail",
-		})
+		ctx.String(http.StatusBadRequest, "MaxRentTime transform fail")
 		return
 	}
 
 	live, err := strconv.ParseBool(liveStr)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"upload_status": false,
-			"error":         "Live tranform fail",
-		})
+		ctx.String(http.StatusBadRequest, err.Error())
 	}
 
 	//	Address for contract send
 	address := common.HexToAddress(uploader)
 
-	file, err3 := ctx.FormFile("bookCover")
-	if err3 != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"upload_status": false,
-			"error":         err3.Error(),
-		})
+	file, err := ctx.FormFile("bookCover")
+	if err != nil {
+		ctx.String(http.StatusBadRequest, err.Error())
 		return
 	}
 
 	bookFile, err := ctx.FormFile("book")
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"upload_status": false,
-			"error":         err.Error(),
-		})
+		ctx.String(http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -160,27 +134,18 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 	}
 	//	Check file format
 	if _, ok := allowExtMap[extName]; !ok {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"upload_status": false,
-			"error":         "Invalid file type",
-		})
+		ctx.String(http.StatusBadRequest, "Invalid file type (cover)")
 		return
 	}
 	if _, ok := allowBookExtMap[bookExtName]; !ok {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"upload_status": true,
-			"error":         "Invalid file type",
-		})
+		ctx.String(http.StatusBadRequest, "Invalid file type (book)")
 		return
 	}
 
 	//	Get this book's tokenId to
-	tokenId, err6 := con.Instance.TotalSupplyBook(nil)
-	if err6 != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{
-			"upload_status": false,
-			"error":         err6.Error(),
-		})
+	tokenId, err := con.Instance.TotalSupplyBook(nil)
+	if err != nil {
+		ctx.String(http.StatusBadGateway, err.Error())
 		return
 	}
 	tokenIdStr := tokenId.String()
@@ -198,12 +163,9 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 	tokenIdInt := tokenId.Int64()
 	amountInt := amount.Int64()
 	maxRentTimeInt := maxRentTime.Int64()
-	gradeInt, err7 := strconv.Atoi(grade)
-	if err7 != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"upload_status": false,
-			"error":         err7.Error(),
-		})
+	gradeInt, err := strconv.Atoi(grade)
+	if err != nil {
+		ctx.String(http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -233,25 +195,20 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 	}
 	collection := con.DB.Database("ebook").Collection(className)
 
-	_, err4 := collection.InsertOne(context.Background(), metaData)
-	if err4 != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"upload_status": false,
-			"error":         err4.Error(),
-		})
+	result, err := collection.InsertOne(context.Background(), metaData)
+	if err != nil {
+		ctx.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	tx, err := con.uploadToBlockchain(amount, address, weiValue, maxRentTime)
 	if err != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{
-			"error":   err.Error(),
-			"message": "Error while mint NFT",
-		})
+		ctx.String(http.StatusBadGateway, err.Error())
 	}
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"upload_status": true,
+		"result":        result,
 		"tx_hash":       tx.Hash().Hex(),
 	})
 

@@ -7,6 +7,7 @@ import (
 	"io"
 	"math/big"
 	"net/http"
+	"path/filepath"
 	"strconv"
 	"sync"
 	"time"
@@ -30,18 +31,18 @@ func (con QueryPersonalController) GetRentBookEndTime(ctx *gin.Context) {
 	idBigInt, ok := new(big.Int).SetString(idstr, 10)
 	//	Test id correct
 	if !ok {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		ctx.String(http.StatusBadRequest, "Invalid ID")
 	}
 	addressStr := ctx.Param("address")
 	address := common.HexToAddress(addressStr)
 	index, err := con.Instance.RenterRentInfoIndex(nil, address, idBigInt)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"Index_error": err})
+		ctx.String(http.StatusBadRequest, err.Error())
 	}
 
 	info, err := con.Instance.RentInfos(nil, idBigInt, index)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"rent_info_index": err})
+		ctx.String(http.StatusBadRequest, err.Error())
 	}
 
 	endTime := info.EndTime
@@ -72,9 +73,7 @@ func (con QueryPersonalController) GetPersonalRentedBook(ctx *gin.Context) {
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": err,
-		})
+		ctx.String(http.StatusBadRequest, err.Error())
 	}
 
 	req.Header.Add("Accept", "application/json")
@@ -82,7 +81,7 @@ func (con QueryPersonalController) GetPersonalRentedBook(ctx *gin.Context) {
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"error": err})
+		ctx.String(http.StatusBadRequest, err.Error())
 	}
 
 	defer res.Body.Close()
@@ -104,11 +103,9 @@ func (con QueryPersonalController) GetPersonalRentedBook(ctx *gin.Context) {
 
 	db := con.DB.Database("ebook")
 
-	collections, err := db.ListCollectionNames(context.TODO(), bson.M{})
+	collections, err := db.ListCollectionNames(context.Background(), bson.M{})
 	if err != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{
-			"error": "Failing when search collections",
-		})
+		ctx.String(http.StatusBadGateway, err.Error())
 		return
 	}
 
@@ -141,9 +138,7 @@ func (con QueryPersonalController) GetPersonalRentedBook(ctx *gin.Context) {
 				var result Book
 				err = cur.Decode(&result)
 				if err != nil {
-					ctx.JSON(http.StatusInternalServerError, gin.H{
-						"error": "Fail occur while decoding result",
-					})
+					ctx.String(http.StatusInternalServerError, err.Error())
 					return
 				}
 				bookChannel <- result
@@ -167,9 +162,7 @@ func (con QueryPersonalController) GetPersonalPublish(ctx *gin.Context) {
 	collections, err := db.ListCollectionNames(context.TODO(), bson.M{})
 
 	if err != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{
-			"error": "Failing when search collections",
-		})
+		ctx.String(http.StatusBadGateway, err.Error())
 		return
 	}
 
@@ -201,9 +194,7 @@ func (con QueryPersonalController) GetPersonalPublish(ctx *gin.Context) {
 			for cur.Next(context.TODO()) {
 				var book Book
 				if err := cur.Decode(&book); err != nil {
-					ctx.JSON(http.StatusInternalServerError, gin.H{
-						"error": "Error occur while decoding data",
-					})
+					ctx.String(http.StatusInternalServerError, err.Error())
 					return
 				}
 				bookChannel <- book
@@ -220,7 +211,19 @@ func (con QueryPersonalController) GetPersonalPublish(ctx *gin.Context) {
 }
 
 func (con QueryPersonalController) GetBookFile(ctx *gin.Context) {
-	// idStr:=ctx.Param("id")
+	idStr := ctx.Param("id")
+
+	match, err := filepath.Glob(filepath.Join("./static/bookfile", idStr+".*"))
+	if err != nil {
+		ctx.String(http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if len(match) > 0 {
+		ctx.File(match[0])
+	} else {
+		ctx.String(http.StatusNotFound, "File not found")
+	}
 }
 
 func (con QueryPersonalController) AddressHaveRentedBook(ctx *gin.Context) {
@@ -232,17 +235,13 @@ func (con QueryPersonalController) AddressHaveRentedBook(ctx *gin.Context) {
 	tokenId := new(big.Int)
 	tokenId, ok := tokenId.SetString(idStr, 10)
 	if !ok {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": "Transform tokenId fail",
-		})
+		ctx.String(http.StatusBadRequest, "Transform tokenId fail")
 		return
 	}
 
 	isRented, err := con.Instance.IsAddressHaveTokenId(nil, address, tokenId)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		ctx.JSON(http.StatusBadRequest, err.Error())
 	}
 
 	if !isRented {
@@ -263,17 +262,13 @@ func (con QueryPersonalController) VerifySignatureMiddleWare(ctx *gin.Context) {
 
 	publicKeyByte, err := hexutil.Decode(publicKey)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		ctx.String(http.StatusBadRequest, err.Error())
 		return
 	}
 
 	signatureByte, err := hexutil.Decode(signature)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": err.Error(),
-		})
+		ctx.String(http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -292,9 +287,7 @@ This request will not trigger a blockchain transaction or cost any gas fees.`)
 	verified := crypto.VerifySignature(publicKeyByte, hash.Bytes(), signatureNoRecoverID)
 
 	if !verified {
-		ctx.JSON(http.StatusForbidden, gin.H{
-			"error": "Signature verify fail",
-		})
+		ctx.String(http.StatusForbidden, "Signature verify fail")
 		return
 	}
 	ctx.Next()
@@ -309,27 +302,20 @@ func (con QueryPersonalController) CheckPermissionToAccessFileMiddleWare(ctx *gi
 	tokenIdBigInt := new(big.Int)
 	tokenIdBigInt, ok := tokenIdBigInt.SetString(tokenIdStr, 10)
 	if !ok {
-		ctx.JSON(http.StatusBadRequest, gin.H{
-			"error": "Transform tokenId error",
-		})
+		ctx.String(http.StatusBadRequest, "Transform tokenId error")
 		return
 	}
 
 	addressHaveTokenId, err := con.Instance.IsAddressHaveTokenId(nil, address, tokenIdBigInt)
 	if err != nil {
-		ctx.JSON(http.StatusBadGateway, gin.H{
-			"error":   "Error occur while check blockchain information",
-			"message": err.Error(),
-		})
+		ctx.String(http.StatusBadGateway, err.Error())
 		return
 	}
 
 	if addressHaveTokenId {
 		ctx.Next()
 	} else {
-		ctx.JSON(http.StatusForbidden, gin.H{
-			"error": "You not have this book's NFT, please borrow it first",
-		})
+		ctx.String(http.StatusForbidden, "You not have this book's NFT, please borrow it first")
 		return
 	}
 }
