@@ -1,6 +1,8 @@
 import {createRouter,createWebHistory} from 'vue-router'
 import Main from '../pages/Main.vue'
 import ReferenceBook from '../pages/ReferenceBook.vue'
+import Product from '../pages/Product.vue'
+
 import Account from '../pages/Account.vue'
 import posted from '../account_page/posted.vue'
 import renting from '../account_page/renting.vue'
@@ -33,6 +35,10 @@ const router=createRouter({
                 { path:'/renting' , component: renting}
               ],
         },
+        {
+             path:'/Product',
+             component: Product,
+        }
     ]
 })
 router.beforeEach((to, from) => {
