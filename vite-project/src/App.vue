@@ -2,14 +2,13 @@
 // import HelloWorld from './components/HelloWorld.vue'
 import { RouterView } from 'vue-router'
 import { initFlowbite } from 'flowbite'
-import Header from './components/Header.vue'
 initFlowbite();
 
 </script>
 
 <template>
   <div class="bg-white w-screen">
-    <Header></Header>
+    <RouterView name="Header"></RouterView>
     <div class="container isolate w-screen">
       <!-- 漸層 -->
       <div class="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80"

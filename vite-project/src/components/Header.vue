@@ -1,5 +1,5 @@
 <template>
-  <header v-if="showStore.showHeader" class="fixed inset-x-0 top-0 z-10 bg-opacity-[90%]" ref="scrollDown">
+  <header class="fixed inset-x-0 top-0 z-10 bg-opacity-[90%]" ref="scrollDown">
     <nav class="flex items-center justify-between p-6 lg:px-8">
       <div class="flex font-bold text-gray-400">
         EBOOK STORE

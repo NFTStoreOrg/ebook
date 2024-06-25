@@ -6,18 +6,24 @@ import Product from '../pages/Product.vue'
 import Account from '../pages/Account.vue'
 import posted from '../account_page/posted.vue'
 import renting from '../account_page/renting.vue'
+import Header from '../components/Header.vue'
 
-import { useShowStore } from '../store/show.ts'
 const router=createRouter({
     history:createWebHistory(),
     routes:[
         { 
             path:'/',
-            component: Main
+            components: {
+                default:Main,
+                Header: Header,
+            }
         },
         { 
             path:'/ReferenceBook',
-            component: ReferenceBook
+            components: {
+                default:ReferenceBook,
+                Header: Header,
+            }
         },
         { 
             path:'/NFT',
@@ -37,14 +43,11 @@ const router=createRouter({
         },
         {
              path:'/Product',
-             component: Product,
+             components:{
+                default:Product,
+                Header: Header,
+             } 
         }
     ]
-})
-router.beforeEach((to, from) => {
-    const showStore = useShowStore()
-    if(to.fullPath!='/Account' && to.fullPath!='/posted'&&to.fullPath!='/renting'){
-        showStore.showHeader=true
-    }
 })
 export default router
