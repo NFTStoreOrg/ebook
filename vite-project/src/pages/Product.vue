@@ -1,11 +1,16 @@
 <template>
-    <div class="container max-w-[90vh] max-h-[85vh]">
-        <div class="grid grid-cols-2">
+    <div class="blur-sm bg-repeat-x bg-center min-w-[90vh] min-h-[50vh]"
+        style="background-image: url('https://s3.amazonaws.com/virginia.webrand.com/virginia/50IgnOZ10MZ/cf9ca0abf2a77c311fc44d9f7ad1a99e/344/1648650462.png')">
+
+    </div>
+
+    <div class="container max-w-[90vh]">
+
+        <div class="grid grid-cols-2 top:">
             <div class=""><img :src=showStore.bookInfo.cover_image
                     class=" max-h-[40vh] mx-auto outline outline-offset-2 outline-1 rounded outline-slate-400/50" />
             </div>
-            <div
-                class="rounded-md px-4 py-3 max-h-[40vh] outline outline-offset-2 outline-1 rounded outline-slate-400/50">
+            <div class="rounded-md max-h-[40vh]">
                 <div class="text-xl font-bold">{{ showStore.bookInfo.title }}</div>
                 <div><span class="text-gray-600 font-bold me-1 mt-3">作者:</span>{{ showStore.bookInfo.writer }}
                 </div>
