@@ -1,40 +1,44 @@
 <template>
-    <div class="blur-sm bg-repeat-x bg-center min-w-[90vh] min-h-[50vh]"
-        style="background-image: url('https://s3.amazonaws.com/virginia.webrand.com/virginia/50IgnOZ10MZ/cf9ca0abf2a77c311fc44d9f7ad1a99e/344/1648650462.png')">
-
+    <div class="relative -top-20 blur-lg bg-repeat-x bg-center min-w-[90vh] min-h-[50vh] 
+        " :style="{ 'background-image': 'url(' + showStore.bookInfo.cover_image + ')' }">
     </div>
+    <div class="container max-w-[90vh] grid grid-rows-2">
+        <div
+            class="absolute max-h-max grid grid-cols-3 gap-6 top-60 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+            <img :src=showStore.bookInfo.cover_image
+                class="max-h-[40vh] mx-auto outline outline-offset-2 outline-1 rounded outline-slate-400/50" />
 
-    <div class="container max-w-[90vh]">
-
-        <div class="grid grid-cols-2 top:">
-            <div class=""><img :src=showStore.bookInfo.cover_image
-                    class=" max-h-[40vh] mx-auto outline outline-offset-2 outline-1 rounded outline-slate-400/50" />
-            </div>
-            <div class="rounded-md max-h-[40vh]">
+            <div class="rounded-md content-center">
                 <div class="text-xl font-bold">{{ showStore.bookInfo.title }}</div>
-                <div><span class="text-gray-600 font-bold me-1 mt-3">作者:</span>{{ showStore.bookInfo.writer }}
+                <div><span class="font-bold me-1 mt-3">作者:</span>{{ showStore.bookInfo.writer }}
                 </div>
-                <div><span class="text-gray-600 font-bold me-1">出版社:</span>{{ showStore.bookInfo.publisher }}</div>
-                <div><span class="text-gray-600 font-bold me-1">
+                <div><span class="font-bold me-1">出版社:</span>{{ showStore.bookInfo.publisher }}</div>
+                <div><span class="font-bold me-1">
                         出版日期:</span>{{ showStore.bookInfo.publishDate }}</div>
-                <div><span class="text-gray-600 font-bold me-1">ISBN:</span>{{ showStore.bookInfo.ISBN }}
+                <div><span class="font-medium me-1">ISBN:</span>{{ showStore.bookInfo.ISBN }}
                 </div>
-                <div><span class="text-gray-600 font-bold me-1">上傳者:</span>{{ showStore.bookInfo.uploader }}</div>
-                <div><span class="text-gray-600 font-bold me-1">最大借閱時間:</span>{{ showStore.bookInfo.maxRentTime }}
+                <div><span class="font-bold me-1">上傳者:</span>{{ showStore.bookInfo.uploader }}</div>
+
+                <div><span class="font-bold me-1">種類:</span>{{ showStore.bookInfo.class.className }}</div>
+                <div><span class="font-bold me-1">年級:</span>{{ showStore.bookInfo.class.grade }}</div>
+                <div><span class="font-bold me-1">版本:</span>{{ showStore.bookInfo.edition }}</div>
+                <div><span class="font-bold me-1">互動書:</span>{{ showStore.bookInfo.live }}</div>
+
+            </div>
+            <div class="rounded-md bg-blue-50/50 flex justify-center">
+                <div class="content-center">
+                    <div><span class="font-bold me-1">最大借閱時間:</span>{{ showStore.bookInfo.maxRentTime }}
+                    </div>
+                    <div><span class="font-bold me-1">數量:</span>{{ showStore.bookInfo.uploader }}</div>
+                    <div><span class="font-bold me-1">$</span>{{ showStore.bookInfo.price }}</div>
+                    <button type="button"
+                        class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">借閱
+                        / 閱讀</button>
                 </div>
-                <div><span class="text-gray-600 font-bold me-1">數量:</span>{{ showStore.bookInfo.uploader }}</div>
-                <div><span class="text-gray-600 font-bold me-1">種類:</span>{{ showStore.bookInfo.class.className }}</div>
-                <div><span class="text-gray-600 font-bold me-1">年級:</span>{{ showStore.bookInfo.class.grade }}</div>
-                <div><span class="text-gray-600 font-bold me-1">版本:</span>{{ showStore.bookInfo.edition }}</div>
-                <div><span class="text-gray-600 font-bold me-1">互動書:</span>{{ showStore.bookInfo.live }}</div>
-                <div><span class="text-gray-600 font-bold me-1">$</span>{{ showStore.bookInfo.price }}</div>
-                <button type="button"
-                    class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">借閱
-                    / 閱讀</button>
             </div>
         </div>
 
-        <div class="text-sm font-medium text-center text-gray-500 border-b border-gray-200">
+        <div class="text-sm font-medium text-center text-gray-500 border-b border-gray-200 relative top-20 bg-blue-50">
             <ul class="flex flex-wrap -mb-px" data-tabs-toggle="#default-tab-content" role="tab">
                 <li class="me-2">
                     <a href="#" role="tab" data-tabs-target="#profile"
@@ -46,10 +50,10 @@
                 </li>
             </ul>
             <div id="default-tab-content">
-                <div class="hidden p-4 rounded-lg bg-gray-50 min-h-96" id="profile" role="tabpanel">
+                <div class="hidden p-4 rounded-lg min-h-96" id="profile" role="tabpanel">
                     <p class="text-sm text-gray-500">{{ showStore.bookInfo.introduction }}</p>
                 </div>
-                <div class="hidden p-4 rounded-lg bg-gray-50 min-h-96" id="dashboard" role="tabpanel">
+                <div class="hidden p-4 rounded-lg min-h-96" id="dashboard" role="tabpanel">
                     <p class="text-sm text-gray-500">{{ showStore.bookInfo.chapter }}</p>
                 </div>
 

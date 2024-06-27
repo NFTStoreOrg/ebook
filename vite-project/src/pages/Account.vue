@@ -46,11 +46,7 @@
     </div>
 </template>
 <script setup lang="ts" name="Account">
-import { useShowStore } from '../store/show'
 import { RouterView, RouterLink } from 'vue-router'
 import { initFlowbite } from 'flowbite'
 initFlowbite();
-
-const showStore = useShowStore()
-showStore.showHeader = false
 </script>
