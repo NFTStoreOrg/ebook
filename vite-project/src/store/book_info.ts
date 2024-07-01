@@ -27,7 +27,7 @@ export const useBookInfoStore=defineStore('book_info',{
                     "edition": "First edition",
                     "pages": 250,
                     "live": true,
-                    "cover_image": "https://s3.amazonaws.com/virginia.webrand.com/virginia/50IgnOZ10MZ/cf9ca0abf2a77c311fc44d9f7ad1a99e/344/1648650462.png",
+                    "cover_image": "https://s3.amazonaws.com/virginia.webrand.com/virginia/nMzY6NJ97Xs/0d40507679ea0528a8cbc080bf0a74e6/344/1648657152.png",
                 },
             
         }
