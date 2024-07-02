@@ -41,7 +41,7 @@ const router=createRouter({
         }
     ]
 })
-router.beforeEach((to, from) => {
+router.beforeEach((to) => {
     const showStore = useShowStore()
     if(to.fullPath!='/Account' && to.fullPath!='/posted'&&to.fullPath!='/renting'){
         showStore.showHeader=true

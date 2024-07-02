@@ -169,6 +169,15 @@ contract YiSinEBook is ERC1155, ERC1155Pausable, Ownable, ReentrancyGuard {
         safeTransferFrom(renterAddress, owner(), bookId, 1, "");
     }
 
+    function modifyBookPrice(uint256 price, uint256 tokenId) external {
+        require(!_isBookBeBurned[tokenId], "Book not exists");
+        require(
+            msg.sender == bookInfos[tokenId].writer,
+            "Only writer can modify book price"
+        );
+        bookInfos[tokenId].rentPrice = price;
+    }
+
     /**
      * @notice Check have authentication for data access rights.
      * @param signer the user address.

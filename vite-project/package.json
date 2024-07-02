@@ -10,16 +10,19 @@
   },
   "dependencies": {
     "@ankurk91/bootstrap-vue": "npm:@ankurk91/bootstrap-vue@^3.0.2",
+    "@metamask/sdk": "^0.26.3",
     "@vue/compat": "^3.4.27",
     "@vue/compiler-sfc": "^3.4.27",
     "axios": "^1.7.2",
     "bootstrap": "4.0.0",
     "flowbite": "^2.3.0",
     "install": "^0.13.0",
+    "metamask": "^0.0.1-security",
     "pinia": "^2.1.7",
     "tailwindcss-animated": "^1.1.0",
     "vue": "^3.4.27",
-    "vue-router": "^4.3.2"
+    "vue-router": "^4.3.2",
+    "web3": "^4.10.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.4",

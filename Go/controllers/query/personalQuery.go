@@ -273,7 +273,7 @@ func (con QueryPersonalController) VerifySignatureMiddleWare(ctx *gin.Context) {
 	}
 
 	data := []byte(`Welcome to YiSin ebook store!
-	
+
 Click to verify that you own this wallet and have control over it.
 
 YiSin ebook (https://yisinnft.org/ebook) need to confirm whether you have the permission to read the e-book file.
