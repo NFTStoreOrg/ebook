@@ -1,6 +1,21 @@
 <script setup lang="ts">
 import Card from '../components/Card.vue'
+import { ref } from 'vue'
 defineProps<{ title: string, slideBgColor: string }>()
+const content = ref()
+
+function slideR() {
+    console.log(content.value.clientWidth)
+    console.log(content.value.scrollWidth)
+    const viewWidth = content.value.clientWidth
+    content.value.scrollLeft += viewWidth
+    console.log(content.value.scrollLeft)
+}
+function slideL() {
+    console.log(content.value.scrollWidth)
+    content.value.scrollLeft -= 800
+    console.log(content.value.scrollLeft)
+}
 </script>
 <template>
     <div class="row mx-auto text-2xl max-w-[95%] font-bold pl-3 pt-3 tracking-wider"><span
@@ -8,8 +23,27 @@ defineProps<{ title: string, slideBgColor: string }>()
             }}</span>
     </div>
     <div :class=slideBgColor class="row mx-auto rounded-3xl m-3 max-h-[80vh] max-w-[95%] bg-opacity-50">
-        <div class="flex snap-x snap-mandatory items-center gap-x-3 overflow-x-auto p-4">
+        <button type="button" @click="slideL"
+            class="absolute text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-full text-sm p-2.5 text-center inline-flex items-center me-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+            <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M5 12h14M5 12l4-4m-4 4 4 4" />
+            </svg>
+
+            <span class="sr-only">Icon description</span>
+        </button>
+        <div ref="content"
+            class="scroll-smooth flex snap-x snap-mandatory items-center gap-x-3 overflow-x-auto overflow-x-hidden p-4">
             <card></card>
         </div>
+        <button type="button" @click="slideR"
+            class="absolute end-0 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-full text-sm p-2.5 text-center inline-flex items-center me-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+            <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M1 5h12m0 0L9 1m4 4L9 9" />
+            </svg>
+            <span class="sr-only">Icon description</span>
+        </button>
     </div>
+
 </template>
