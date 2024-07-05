@@ -61,134 +61,134 @@
                         </div>
                         <!-- Modal body -->
                         <div class="p-4 md:p-5">
-                            <form class="space-y-4" action="#">
+                            <form class="space-y-4" @submit.prevent="handleUploadBook">
                                 <div>
                                     <label
                                         class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">書名</label>
                                     <input
                                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                                        name="title" required />
+                                        v-model="uploadData.title" required />
                                 </div>
                                 <div>
                                     <label
                                         class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">作者</label>
                                     <input
                                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                                        name="writer" required />
+                                        v-model="uploadData.writer" required />
                                 </div>
                                 <div>
                                     <label
                                         class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">出版社</label>
                                     <input
                                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                                        name="publisher" required />
+                                        v-model="uploadData.publisher" required />
                                 </div>
                                 <div>
                                     <label
                                         class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">出版日期</label>
                                     <input
                                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                                        type="date" name="publishDate" required />
+                                        type="date" v-model="uploadData.publishDate" required />
                                 </div>
                                 <div>
                                     <label
                                         class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">錢包地址</label>
                                     <input
                                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                                        name="uploader" required />
+                                        v-model="uploadData.uploader" required />
                                 </div>
                                 <div>
                                     <label
                                         class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">ISBN</label>
                                     <input
                                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                                        name="isbn" required />
+                                        v-model="uploadData.isbn" required />
                                 </div>
                                 <div>
                                     <label
                                         class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">簡介</label>
                                     <input
                                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                                        name="introduction" required />
+                                        v-model="uploadData.introduction" required />
                                 </div>
                                 <div>
                                     <label
                                         class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">章節</label>
                                     <input
                                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                                        name="chapter" required />
+                                        v-model="uploadData.chapter" required />
                                 </div>
                                 <div>
                                     <label
                                         class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">最大借閱時間</label>
                                     <input
                                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                                        name="maxRentTime" required />
+                                        v-model="uploadData.maxRentTime" required />
                                 </div>
                                 <div>
                                     <label
                                         class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">借閱價格</label>
                                     <input
                                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                                        name="price" required />
+                                        v-model="uploadData.price" required />
                                 </div>
                                 <div>
                                     <label
                                         class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">類別</label>
                                     <input
                                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                                        name="class" required />
+                                        v-model="uploadData.class" required />
                                 </div>
                                 <div>
                                     <label
                                         class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">年級</label>
                                     <input
                                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                                        name="grade" required />
+                                        v-model="uploadData.grade" required />
                                 </div>
                                 <div>
                                     <label
                                         class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">發行量</label>
                                     <input
                                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                                        name="amount" required />
+                                        v-model="uploadData.amount" required />
                                 </div>
                                 <div>
                                     <label
                                         class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">版本</label>
                                     <input
                                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                                        name="edition" required />
+                                        v-model="uploadData.edition" required />
                                 </div>
                                 <div>
                                     <label
                                         class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">總頁數</label>
                                     <input
                                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                                        name="pages" required />
+                                        v-model="uploadData.pages" required />
                                 </div>
                                 <div>
                                     <label
                                         class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">是否互動書</label>
                                     <input
                                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                                        name="live" required />
+                                        v-model="uploadData.live" required />
                                 </div>
                                 <div>
                                     <label
                                         class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">書籍封面</label>
                                     <input
                                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                                        name="bookCover" type="file" required />
+                                        @change="handleFileChange('bookCover')" type="file" required />
                                 </div>
                                 <div>
                                     <label
                                         class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">書籍檔案</label>
                                     <input
                                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                                        name="book" type="file" required />
+                                        @change="handleFileChange('book')" type="file" required />
                                 </div>
-                                <button type="submit" @click="handleUploadBook"
+                                <button type="submit"
                                     class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">上傳</button>
                             </form>
                         </div>
@@ -271,7 +271,33 @@
 import card from '../components/Card.vue';
 import axios from 'axios';
 import { ref } from 'vue';
+import { useSignatureStore } from '../store/personal_sign';
 var modalPop = ref()
+const uploadData = ref({
+    title: '',
+    writer: '',
+    publisher: '',
+    publishDate: '',
+    uploader: '',
+    isbn: '',
+    introduction: '',
+    chapter: '',
+    maxRentTime: 0,
+    price: 0,
+    class: '',
+    grade: 0,
+    amount: 0,
+    edition: '',
+    pages: 0,
+    live: false,
+})
+
+const selectedBookCoverFile = ref<File | null>(null)
+const selectedBookFile = ref<File | null>(null)
+
+const sign = useSignatureStore()
+//  Init MetaMask SDK
+sign.initSDK()
 
 const handleBackgroundClick = (event: any) => {
     if (event.target.id === 'edit-modal' || event.target.id === 'upload-modal') {
@@ -281,12 +307,51 @@ const handleBackgroundClick = (event: any) => {
         }, 300);
     }
 };
+//  神奇寫法，待釐清
+const handleFileChange = (type: string) => (event: Event) => {
+    const target = event.target as HTMLInputElement
+    //  Get file
+    if (target.files && target.files.length > 0) {
+        if (type === 'bookCover') {
+            selectedBookCoverFile.value = target.files[0]
+        } else if (type === 'book') {
+            selectedBookFile.value = target.files[0]
+        }
+    }
+}
 
 const handleUploadBook = async () => {
     let signature, signer
+    //  先簽名
+    try {
+        signature = await sign.getSign()
+        signer = sign.account
+    } catch (err) {
+        console.log(err)
+        return
+    }
+    console.log(signature)
+    //  組合上傳的檔案及uploadData資料
+    const formData = new FormData()
+    if (selectedBookCoverFile.value) {
+        formData.append('bookCover', selectedBookCoverFile.value)
+    }
+    if (selectedBookFile.value) {
+        formData.append('book', selectedBookFile.value)
+    }
+
+    Object.keys(uploadData.value).forEach(key => {
+        formData.append(key, (uploadData.value as any)[key])
+    })
+
+    //  post to back-end
     try {
         //  成功上傳
-        let response = await axios.post('https://yisinnft.org/api/book/' + signer + '/' + signature)
+        let response = await axios.post('https://yisinnft.org/api/book/' + signer + '/' + signature, formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        })
         console.log(response)
     } catch (err) {
         //  上傳失敗

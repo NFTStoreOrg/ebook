@@ -103,7 +103,7 @@ This request will not trigger a blockchain transaction or cost any gas fees.`)
 	}
 
 	if !found {
-		ctx.String(http.StatusBadRequest, "No book found with the given tokenId")
+		ctx.String(http.StatusNotFound, "No book found with the given tokenId")
 		return
 	}
 

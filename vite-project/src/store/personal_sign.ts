@@ -1,9 +1,37 @@
 import { defineStore } from 'pinia'
-import MetaMaskSDK, { SDKProvider } from '@metamask/sdk';
+import MetaMaskSDK, { MetaMaskSDKOptions, SDKProvider } from '@metamask/sdk';
+import { Buffer } from 'buffer';
+
+interface SdkState {
+  sdk: MetaMaskSDK | null
+  provider: SDKProvider | undefined
+  account: string | null | undefined
+  chainId: string | undefined | unknown
+  lastResponse: string
+  availableLanguages: string[]
+  connected: boolean
+  selectedLanguage: string
+}
 
 export const useSignatureStore = defineStore('personal_sign', {
-  //函式
   actions: {
+    initSDK() {
+      this.sdk = new MetaMaskSDK({
+        dappMetadata: {
+          url: window.location.href,
+          name: 'Yi Sin ebook',
+        },
+        enableAnalytics: true,
+        checkInstallationImmediately: false,
+        logging: {
+          developerMode: true,
+          sdk: true
+        },
+        i18nOptions: {
+          enabled: true,
+        }
+      } as MetaMaskSDKOptions)
+    },
     async onConnect() {
       try {
         await this.sdk?.connect();
@@ -39,6 +67,7 @@ export const useSignatureStore = defineStore('personal_sign', {
 
         this.availableLanguages = this.sdk?.availableLanguages ?? ['en'];
       } catch (err) {
+        alert('Please install metaMask!')
         console.log(`erquest accounts error`, err)
       }
     },
@@ -64,10 +93,10 @@ export const useSignatureStore = defineStore('personal_sign', {
     },
     async getSign() {
       if (!this.provider) {
-        this.onConnect()
+        await this.onConnect()
       }
       if (!this.connected) {
-        this.onConnect()
+        await this.onConnect()
       }
       try {
         const from = this.provider?.getSelectedAddress();
@@ -78,11 +107,10 @@ Click to verify that you own this wallet and have control over it.
 YiSin ebook (https://yisinnft.org/ebook) need to confirm whether you have the permission to read the e-book file.
 
 This request will not trigger a blockchain transaction or cost any gas fees.`;
-        const hexMessage = '0x' + Buffer.from(message, 'utf8').toString('hex');
-
+        const hexMessage = `0x${Buffer.from(message, 'utf8').toString('hex')}`;
         const sign = await window.ethereum?.request({
           method: 'personal_sign',
-          params: [hexMessage, from, 'Example password'],
+          params: [hexMessage, from],
         });
         console.log(`sign: ${sign}`);
         return sign;
@@ -92,34 +120,14 @@ This request will not trigger a blockchain transaction or cost any gas fees.`;
       }
     },
   },
-  //數據儲存
-  state() {
-    var sdk = new MetaMaskSDK({
-      dappMetadata: {
-        url: window.location.href,
-        name: 'Yi Sin ebook',
-      },
-      enableAnalytics: true,
-      checkInstallationImmediately: false,
-      logging: {
-        developerMode: true,
-        sdk: true
-      },
-      i18nOptions: {
-        enabled: true,
-      }
-    })
-    var provider = sdk.getProvider() as SDKProvider | undefined
-    var availableLanguages: string[] = ['']
-    return {
-      sdk,
-      account: provider?.getSelectedAddress() as string | null | undefined,
-      chainId: provider?.getChainId() as string | undefined | unknown,
-      connected: false,
-      lastResponse: '',
-      provider,
-      availableLanguages,
-      selectedLanguage: '',
-    }
-  }
+  state: (): SdkState => ({
+    sdk: null,
+    provider: undefined,
+    account: null,
+    chainId: undefined,
+    lastResponse: '',
+    availableLanguages: [''],
+    connected: false,
+    selectedLanguage: '',
+  })
 })

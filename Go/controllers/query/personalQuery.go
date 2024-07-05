@@ -260,12 +260,6 @@ func (con QueryPersonalController) VerifySignatureMiddleWare(ctx *gin.Context) {
 	signature := ctx.Param("signature")
 	publicKey := ctx.Param("address")
 
-	publicKeyByte, err := hexutil.Decode(publicKey)
-	if err != nil {
-		ctx.String(http.StatusBadRequest, err.Error())
-		return
-	}
-
 	signatureByte, err := hexutil.Decode(signature)
 	if err != nil {
 		ctx.String(http.StatusBadRequest, err.Error())
@@ -280,16 +274,26 @@ YiSin ebook (https://yisinnft.org/ebook) need to confirm whether you have the pe
 
 This request will not trigger a blockchain transaction or cost any gas fees.`)
 
-	hash := crypto.Keccak256Hash(data)
+	message := fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(data), data)
 
-	signatureNoRecoverID := signatureByte[:len(signatureByte)-1]
+	hash := crypto.Keccak256Hash([]byte(message))
+	fmt.Println(len(signatureByte))
+	//	Recovery public key from signature.
+	recoveredPubKey, err := crypto.Ecrecover(hash.Bytes(), signatureByte)
+	if err != nil {
+		//	驗證簽名會跑進這裡，最後一碼檢查碼被乘以2了 27變54
+		ctx.String(http.StatusInternalServerError, err.Error())
+		return
+	}
 
-	verified := crypto.VerifySignature(publicKeyByte, hash.Bytes(), signatureNoRecoverID)
+	//	Change public key to address
+	recoveredAddress := crypto.PubkeyToAddress(*recoveredPubKey).Hex()
 
-	if !verified {
+	if recoveredAddress != publicKey {
 		ctx.String(http.StatusForbidden, "Signature verify fail")
 		return
 	}
+
 	ctx.Next()
 }
 

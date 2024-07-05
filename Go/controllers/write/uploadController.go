@@ -103,12 +103,14 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 	file, err := ctx.FormFile("bookCover")
 	if err != nil {
 		ctx.String(http.StatusBadRequest, err.Error())
+		fmt.Println("bookCover")
 		return
 	}
 
 	bookFile, err := ctx.FormFile("book")
 	if err != nil {
 		ctx.String(http.StatusBadRequest, err.Error())
+		fmt.Println("book")
 		return
 	}
 
