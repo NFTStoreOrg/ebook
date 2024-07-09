@@ -1,5 +1,5 @@
 <template>
-  <header v-if="showStore.showHeader" class="fixed inset-x-0 top-0 z-10 bg-opacity-[90%]" ref="scrollDown">
+  <header class="fixed inset-x-0 top-0 z-10 bg-opacity-[90%]" ref="scrollDown">
     <nav class="flex items-center justify-between p-6 lg:px-8">
       <div class="flex font-bold text-gray-400">
         EBOOK STORE
@@ -18,7 +18,7 @@
       </div>
 
       <div class="flex items-center">
-        <RouterLink to="/Account" @click="clickAccount()">
+        <RouterLink to="/Account">
           <button type="button"
             class="text-xs me-2 text-gray-900 focus:outline-none bg-white rounded-full border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
             Account
@@ -127,15 +127,10 @@
   </teleport>
 </template>
 <script setup lang="ts" name="Header">
-import { useShowStore } from '../store/show.ts'
 import { ref } from 'vue'
 
-const showStore = useShowStore()
 var modalPop = ref()
 
-function clickAccount() {
-  showStore.showHeader = false
-}
 const handleBackgroundClick = (event: any) => {
   if (event.target.id === 'authentication-modal') {
     modalPop.value.classList.add('scale-105')
@@ -144,17 +139,17 @@ const handleBackgroundClick = (event: any) => {
     }, 300);
   }
 };
+
 var scrollDown = ref()
 
 window.addEventListener("scroll", handleScroll);
 function handleScroll() {
-  if (showStore.showHeader == true) {
-    if (window.scrollY >= 200) {
-      scrollDown.value.classList.add('bg-slate-100');
-    } else {
-      scrollDown.value.classList.remove('bg-slate-100');
-    }
+  if (window.scrollY >= 200) {
+    scrollDown.value.classList.add('bg-slate-100');
+  } else {
+    scrollDown.value.classList.remove('bg-slate-100');
   }
+
 }
 
 
