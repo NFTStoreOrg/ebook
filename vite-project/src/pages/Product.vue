@@ -39,8 +39,7 @@
             </div>
         </div>
 
-        <div
-            class="text-sm font-medium text-gray-500 border-b border-gray-200 relative top-20 bg-blue-50/75 rounded-lg">
+        <div class="text-sm font-medium text-gray-500 border border-gray-200 relative top-20 rounded-lg">
             <ul class="flex flex-wrap -mb-px" data-tabs-toggle="#default-tab-content" role="tab">
                 <li class="me-2">
                     <a href="#" role="tab" data-tabs-target="#detail"
@@ -55,7 +54,7 @@
                         class="inline-block p-4 text-blue-600 border-b-2 border-blue-600 rounded-t-lg">章節</a>
                 </li>
             </ul>
-            <div id="default-tab-content">
+            <div id="default-tab-content" class="bg-blue-50/75">
                 <div class="lg:ml-20 md:ml-8 sm:ml-0 hidden p-4 rounded-lg min-h-96 text-slate-700 text-lg tracking-wider font-medium grid grid-cols-2 gap-2 content-center"
                     id="detail" role="tabpanel">
                     <div>ISBN:{{ showStore.bookInfo.ISBN }}</div>
