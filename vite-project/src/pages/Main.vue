@@ -30,24 +30,31 @@
         </p>
         <hr class="block mb-0 w-full" />
         <div class="grid grid-cols-1 gap-8 mt-3 lg:grid-cols-4 md:grid-cols-3 xl:grid-cols-6 mx-auto">
-            <Card></Card>
+            <Card :cardStore=cardStore.newBooks></Card>
         </div>
     </div>
 
     <!-- section3 -->
-    <CardSlide title="教科書" slideBgColor="bg-orange-200"></CardSlide>
-    <CardSlide title="參考書" slideBgColor="bg-red-100"></CardSlide>
-    <CardSlide title="兒童書籍" slideBgColor="bg-sky-200"></CardSlide>
-    <CardSlide title="互動書" slideBgColor="bg-violet-100"></CardSlide>
-    <CardSlide title="影片" slideBgColor="bg-violet-100"></CardSlide>
-    <CardSlide title="其他" slideBgColor="bg-violet-100"></CardSlide>
+    <CardSlide title="教科書" slideBgColor="bg-orange-200" :cardStore=cardStore.textbook></CardSlide>
+    <CardSlide title="參考書" slideBgColor="bg-red-100" :cardStore=cardStore.referenceBook></CardSlide>
+    <CardSlide title="兒童書籍" slideBgColor="bg-sky-200" :cardStore=cardStore.childrenBook></CardSlide>
+    <CardSlide title="互動書" slideBgColor="bg-violet-100" :cardStore=cardStore.newBooks></CardSlide>
+    <CardSlide title="影片" slideBgColor="bg-violet-100" :cardStore=cardStore.video></CardSlide>
+    <CardSlide title="其他" slideBgColor="bg-violet-100" :cardStore=cardStore.otherBook></CardSlide>
 
 </template>
 <script setup lang="ts" name="Main">
 // import { ref } from 'vue'
 import Card from '../components/Card.vue'
 import CardSlide from '../components/CardSlide.vue'
-
+import { useCardStore } from '../store/card'
+const cardStore = useCardStore()
+cardStore.getNewestBook()
+cardStore.getClassBook("textbook")
+cardStore.getClassBook("children")
+cardStore.getClassBook("video")
+cardStore.getClassBook("reference")
+cardStore.getClassBook("other")
 </script>
 <style scoped>
 .marquee {

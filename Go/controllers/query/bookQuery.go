@@ -59,14 +59,12 @@ func (con QueryBookController) GetBookInformation(ctx *gin.Context) {
 	id, err := strconv.Atoi(idstr)
 	if err != nil {
 		ctx.String(http.StatusBadRequest, err.Error())
-		return
 	}
 
 	db := con.DB.Database("ebook")
 	collections, err := db.ListCollectionNames(context.TODO(), bson.M{})
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, err.Error())
-		return
 	}
 	var book Book
 	found := false
@@ -83,7 +81,6 @@ func (con QueryBookController) GetBookInformation(ctx *gin.Context) {
 
 	if !found {
 		ctx.String(http.StatusBadRequest, "No book found with the given tokenId")
-		return
 	}
 
 	//	Return book information
@@ -119,7 +116,7 @@ func (con QueryBookController) GetClassOfBooks(ctx *gin.Context) {
 	cur, err := collection.Find(context.Background(), bson.D{{}})
 	if err != nil {
 		ctx.String(http.StatusBadRequest, err.Error())
-		return
+
 	}
 	defer cur.Close(context.Background())
 
@@ -130,7 +127,6 @@ func (con QueryBookController) GetClassOfBooks(ctx *gin.Context) {
 		err := cur.Decode(&result)
 		if err != nil {
 			ctx.String(http.StatusBadRequest, err.Error())
-			return
 		}
 
 		results = append(results, result)
@@ -148,7 +144,6 @@ func (con QueryBookController) GetTextbookGrade(ctx *gin.Context) {
 	grade, err := strconv.Atoi(gradeStr)
 	if err != nil {
 		ctx.String(http.StatusBadRequest, err.Error())
-		return
 	}
 
 	collection := con.DB.Database("ebook").Collection("textbook")
@@ -192,7 +187,6 @@ func (con QueryBookController) GetClassOfTwentyBooksForIndex(ctx *gin.Context) {
 	cur, err := collection.Find(context.TODO(), bson.D{{}}, findOptions)
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, err.Error())
-		return
 	}
 
 	defer cur.Close(context.TODO())
@@ -217,7 +211,6 @@ func (con QueryBookController) GetNewestTwelveBookForIndex(ctx *gin.Context) {
 	collections, err := db.ListCollectionNames(context.TODO(), bson.M{})
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, err.Error())
-		return
 	}
 
 	var wg sync.WaitGroup
@@ -251,7 +244,6 @@ func (con QueryBookController) GetNewestTwelveBookForIndex(ctx *gin.Context) {
 				var book Book
 				if err := cur.Decode(&book); err != nil {
 					ctx.String(http.StatusInternalServerError, err.Error())
-					return
 				}
 				results = append(results, book)
 			}
@@ -328,7 +320,6 @@ func (con QueryBookController) GetLiveBook(ctx *gin.Context) {
 	collections, err := db.ListCollectionNames(context.Background(), bson.M{})
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, err.Error())
-		return
 	}
 
 	var wg sync.WaitGroup
@@ -356,7 +347,6 @@ func (con QueryBookController) GetLiveBook(ctx *gin.Context) {
 				var book Book
 				if err := cur.Decode(&book); err != nil {
 					ctx.String(http.StatusInternalServerError, err.Error())
-					return
 				}
 				booksChannel <- book
 			}

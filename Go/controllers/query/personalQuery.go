@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -263,9 +264,16 @@ func (con QueryPersonalController) VerifySignatureMiddleWare(ctx *gin.Context) {
 	signatureByte, err := hexutil.Decode(signature)
 	if err != nil {
 		ctx.String(http.StatusBadRequest, err.Error())
-		return
 	}
 
+	if len(signatureByte) != 65 {
+		ctx.String(http.StatusBadRequest, "Signature length must have 65 bytes")
+	}
+
+	v, r, s := signatureByte[64], signatureByte[:32], signatureByte[32:64]
+	if v != 0 && v != 1 {
+		v -= 27
+	}
 	data := []byte(`Welcome to YiSin ebook store!
 
 Click to verify that you own this wallet and have control over it.
@@ -274,27 +282,22 @@ YiSin ebook (https://yisinnft.org/ebook) need to confirm whether you have the pe
 
 This request will not trigger a blockchain transaction or cost any gas fees.`)
 
-	message := fmt.Sprintf("\x19Ethereum Signed Message:\n%d%s", len(data), data)
+	prefix := fmt.Sprintf("\x19Ethereum Signed Message:\n%d", len(data))
+	hash := crypto.Keccak256Hash([]byte(prefix), []byte(data))
 
-	hash := crypto.Keccak256Hash([]byte(message))
-	fmt.Println(len(signatureByte))
 	//	Recovery public key from signature.
-	recoveredPubKey, err := crypto.Ecrecover(hash.Bytes(), signatureByte)
+	recoveredPubKey, err := crypto.SigToPub(hash.Bytes(), append(r, append(s, v)...))
 	if err != nil {
-		//	驗證簽名會跑進這裡，最後一碼檢查碼被乘以2了 27變54
 		ctx.String(http.StatusInternalServerError, err.Error())
-		return
 	}
 
 	//	Change public key to address
 	recoveredAddress := crypto.PubkeyToAddress(*recoveredPubKey).Hex()
+	lowerCaseAddress := strings.ToLower(recoveredAddress)
 
-	if recoveredAddress != publicKey {
+	if lowerCaseAddress != publicKey {
 		ctx.String(http.StatusForbidden, "Signature verify fail")
-		return
 	}
-
-	ctx.Next()
 }
 
 func (con QueryPersonalController) CheckPermissionToAccessFileMiddleWare(ctx *gin.Context) {
@@ -307,19 +310,16 @@ func (con QueryPersonalController) CheckPermissionToAccessFileMiddleWare(ctx *gi
 	tokenIdBigInt, ok := tokenIdBigInt.SetString(tokenIdStr, 10)
 	if !ok {
 		ctx.String(http.StatusBadRequest, "Transform tokenId error")
-		return
 	}
 
 	addressHaveTokenId, err := con.Instance.IsAddressHaveTokenId(nil, address, tokenIdBigInt)
 	if err != nil {
 		ctx.String(http.StatusBadGateway, err.Error())
-		return
 	}
 
 	if addressHaveTokenId {
 		ctx.Next()
 	} else {
 		ctx.String(http.StatusForbidden, "You not have this book's NFT, please borrow it first")
-		return
 	}
 }

@@ -36,7 +36,7 @@
 
         已發佈
         <div class="grid grid-cols-1 gap-8 mt-3 lg:grid-cols-4 md:grid-cols-3 xl:grid-cols-6 mx-auto">
-            <card></card>
+            <card :cardStore=cardStore.newBooks></card>
         </div>
         <!-- upload modal -->
         <teleport to="body">
@@ -270,8 +270,14 @@
 <script setup lang="ts" name="posted">
 import card from '../components/Card.vue';
 import axios from 'axios';
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useSignatureStore } from '../store/personal_sign';
+import { useCardStore } from '../store/card'
+const cardStore = useCardStore()
+cardStore.getNewestBook()
+const sign = useSignatureStore()
+sign.initSDK()
+
 var modalPop = ref()
 const uploadData = ref({
     title: '',
@@ -292,12 +298,14 @@ const uploadData = ref({
     live: false,
 })
 
+onMounted(async () => {
+    await sign.onConnect()
+    uploadData.value.uploader = <string>sign.account
+    console.log(sign.account)
+})
+
 const selectedBookCoverFile = ref<File | null>(null)
 const selectedBookFile = ref<File | null>(null)
-
-const sign = useSignatureStore()
-//  Init MetaMask SDK
-sign.initSDK()
 
 const handleBackgroundClick = (event: any) => {
     if (event.target.id === 'edit-modal' || event.target.id === 'upload-modal') {
@@ -307,7 +315,7 @@ const handleBackgroundClick = (event: any) => {
         }, 300);
     }
 };
-//  神奇寫法，待釐清
+
 const handleFileChange = (type: string) => (event: Event) => {
     const target = event.target as HTMLInputElement
     //  Get file
@@ -343,6 +351,8 @@ const handleUploadBook = async () => {
     Object.keys(uploadData.value).forEach(key => {
         formData.append(key, (uploadData.value as any)[key])
     })
+
+    console.log(formData)
 
     //  post to back-end
     try {

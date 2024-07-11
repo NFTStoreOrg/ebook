@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"path"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -171,6 +172,8 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 		return
 	}
 
+	//	Uploader to lower case
+	uploader = strings.ToLower(uploader)
 	//	Write metadata to database
 	metaData := gin.H{
 		"title":        title,

@@ -8,20 +8,20 @@ import posted from '../account_page/posted.vue'
 import renting from '../account_page/renting.vue'
 import Header from '../components/Header.vue'
 
-const router=createRouter({
-    history:createWebHistory(),
-    routes:[
-        { 
-            path:'/',
+const router = createRouter({
+    history: createWebHistory(),
+    routes: [
+        {
+            path: '/',
             components: {
-                default:Main,
+                default: Main,
                 Header: Header,
             }
         },
-        { 
-            path:'/ReferenceBook',
+        {
+            path: '/ReferenceBook',
             components: {
-                default:ReferenceBook,
+                default: ReferenceBook,
                 Header: Header,
             }
         },
@@ -42,11 +42,11 @@ const router=createRouter({
             ],
         },
         {
-             path:'/Product',
-             components:{
-                default:Product,
+            path: '/Product/',
+            components: {
+                default: Product,
                 Header: Header,
-             } 
+            }
         }
     ]
 })

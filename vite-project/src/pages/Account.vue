@@ -49,4 +49,5 @@
 import { RouterView, RouterLink } from 'vue-router'
 import { initFlowbite } from 'flowbite'
 initFlowbite();
+
 </script>

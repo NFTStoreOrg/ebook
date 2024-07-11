@@ -21,7 +21,7 @@ export const useSignatureStore = defineStore('personal_sign', {
           url: window.location.href,
           name: 'Yi Sin ebook',
         },
-        enableAnalytics: true,
+        enableAnalytics: false,
         checkInstallationImmediately: false,
         logging: {
           developerMode: true,
@@ -39,6 +39,7 @@ export const useSignatureStore = defineStore('personal_sign', {
         this.provider = this.sdk?.getProvider();
         this.chainId = this.provider?.getChainId();
         this.account = this.provider?.getSelectedAddress();
+        //  MetaMask event
         //  Chain changed
         this.provider?.on('chainChanged', chain => {
           console.log(`App::Chain changed:'`, chain);
@@ -67,8 +68,7 @@ export const useSignatureStore = defineStore('personal_sign', {
 
         this.availableLanguages = this.sdk?.availableLanguages ?? ['en'];
       } catch (err) {
-        alert('Please install metaMask!')
-        console.log(`erquest accounts error`, err)
+        console.log(`request accounts error`, err)
       }
     },
     async addPolygonChain() {
@@ -92,12 +92,6 @@ export const useSignatureStore = defineStore('personal_sign', {
       }
     },
     async getSign() {
-      if (!this.provider) {
-        await this.onConnect()
-      }
-      if (!this.connected) {
-        await this.onConnect()
-      }
       try {
         const from = this.provider?.getSelectedAddress();
         const message = `Welcome to YiSin ebook store!
@@ -112,7 +106,6 @@ This request will not trigger a blockchain transaction or cost any gas fees.`;
           method: 'personal_sign',
           params: [hexMessage, from],
         });
-        console.log(`sign: ${sign}`);
         return sign;
       } catch (err: any) {
         console.log(err);
