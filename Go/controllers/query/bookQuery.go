@@ -282,7 +282,8 @@ func mergeSortedArrays(sortedArrays [][]Book) []Book {
 				//	If this array is the last array, append to new arrays
 				if i == len(sortedArrays)-1 {
 					newSortedArrays = append(newSortedArrays, sortedArrays[i])
-				} else { //	Merge two array into one sorted array, and append to new arrays
+				} else {
+					//	Merge two array into one sorted array, and append to new arrays
 					merged := merge(sortedArrays[i], sortedArrays[i+1])
 					newSortedArrays = append(newSortedArrays, merged)
 				}

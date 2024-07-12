@@ -59,6 +59,7 @@
                     <div>出版社:{{ showStore.publisher }}</div>
                     <div>出版日期:{{ showStore.publishDate }}</div>
                     <div>上傳者:{{ showStore.uploader }}</div>
+                    <div>上傳時間:{{ showStore.uploadTime }}</div>
                     <div>種類:{{ showStore.class.className }}</div>
                     <div>年級:{{ showStore.class.grade }}</div>
                     <div>版本:{{ showStore.edition }}</div>
@@ -84,22 +85,48 @@
 import { useBookInfoStore } from '../store/book_info.ts'
 import CardSlide from '../components/CardSlide.vue';
 import { useCardStore } from '../store/card.ts';
+import { useRoute } from 'vue-router';
+import { onMounted, ref, watchEffect } from 'vue';
+
+//  Define bookArray's class
+interface Book {
+    title: string;
+    imgUrl: string;
+    price: number;
+    bookId: number;
+}
 
 const showStore = useBookInfoStore()
 const cardInfoStore = useCardStore()
-let bookClass: string = showStore.class.className
-let bookArray: any
+const route = useRoute()
 
-if (bookClass == "reference") {
-    bookArray = cardInfoStore.referenceBook
-} else if (bookClass == "children") {
-    bookArray = cardInfoStore.childrenBook
-} else if (bookClass == "textbook") {
-    bookArray = cardInfoStore.textbook
-} else if (bookClass == "other") {
-    bookArray = cardInfoStore.otherBook
-} else if (bookClass == "video") {
-    bookArray = cardInfoStore.video
-}
+
+const bookClass = ref('')
+const bookArray = ref<Book[]>([]);
+
+onMounted(async () => {
+    const tokenId = route.query.bookId
+    if (tokenId) {
+        await showStore.getBookInfo(tokenId)
+        //  Ensure that set bookClass after get book information
+        bookClass.value = showStore.class.className
+        cardInfoStore.getClassBook(bookClass.value)
+        await showStore.getBookRemain(tokenId)
+    }
+})
+
+watchEffect(() => {
+    if (bookClass.value == "reference") {
+        bookArray.value = cardInfoStore.referenceBook
+    } else if (bookClass.value == "children") {
+        bookArray.value = cardInfoStore.childrenBook
+    } else if (bookClass.value == "textbook") {
+        bookArray.value = cardInfoStore.textbook
+    } else if (bookClass.value == "other") {
+        bookArray.value = cardInfoStore.otherBook
+    } else if (bookClass.value == "video") {
+        bookArray.value = cardInfoStore.video
+    }
+})
 
 </script>
