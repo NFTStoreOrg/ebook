@@ -7,6 +7,7 @@ import (
 	"io"
 	"math/big"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -160,10 +161,10 @@ func (con QueryPersonalController) GetPersonalRentedBook(ctx *gin.Context) {
 func (con QueryPersonalController) GetPersonalPublish(ctx *gin.Context) {
 	address := ctx.Param("address")
 	db := con.DB.Database("ebook")
-	collections, err := db.ListCollectionNames(context.TODO(), bson.M{})
+	collections, err := db.ListCollectionNames(context.Background(), bson.M{})
 
 	if err != nil {
-		ctx.String(http.StatusBadGateway, err.Error())
+		ctx.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -187,12 +188,12 @@ func (con QueryPersonalController) GetPersonalPublish(ctx *gin.Context) {
 			coll := db.Collection(collName)
 			filter := bson.M{"uploader": address}
 
-			cur, _ := coll.Find(context.TODO(), filter)
+			cur, _ := coll.Find(context.Background(), filter)
 			if cur == nil {
 				return
 			}
 
-			for cur.Next(context.TODO()) {
+			for cur.Next(context.Background()) {
 				var book Book
 				if err := cur.Decode(&book); err != nil {
 					ctx.String(http.StatusInternalServerError, err.Error())
@@ -214,17 +215,23 @@ func (con QueryPersonalController) GetPersonalPublish(ctx *gin.Context) {
 func (con QueryPersonalController) GetBookFile(ctx *gin.Context) {
 	idStr := ctx.Param("id")
 
+	// Attempt to find file in given path
 	match, err := filepath.Glob(filepath.Join("./static/bookfile", idStr+".*"))
 	if err != nil {
-		ctx.String(http.StatusInternalServerError, err.Error())
-		return
+		if os.IsNotExist(err) {
+			ctx.String(http.StatusBadRequest, "Invalid path or file not found")
+		} else {
+			ctx.String(http.StatusInternalServerError, err.Error())
+		}
 	}
-
-	if len(match) > 0 {
-		ctx.File(match[0])
-	} else {
+	if len(match) == 0 {
 		ctx.String(http.StatusNotFound, "File not found")
 	}
+
+	//	Return file
+	ctx.Header("Access-Control-Expose-Headers", "Content-Disposition")
+	ctx.Header("Content-Disposition", "attachment; filename="+filepath.Base(match[0]))	//	filepath.Base: the last router, before . string
+	ctx.File(match[0])
 }
 
 func (con QueryPersonalController) AddressHaveRentedBook(ctx *gin.Context) {
@@ -237,12 +244,11 @@ func (con QueryPersonalController) AddressHaveRentedBook(ctx *gin.Context) {
 	tokenId, ok := tokenId.SetString(idStr, 10)
 	if !ok {
 		ctx.String(http.StatusBadRequest, "Transform tokenId fail")
-		return
 	}
 
 	isRented, err := con.Instance.IsAddressHaveTokenId(nil, address, tokenId)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, err.Error())
+		ctx.JSON(http.StatusBadGateway, err.Error())
 	}
 
 	if !isRented {
@@ -292,10 +298,9 @@ This request will not trigger a blockchain transaction or cost any gas fees.`)
 	}
 
 	//	Change public key to address
-	recoveredAddress := crypto.PubkeyToAddress(*recoveredPubKey).Hex()
-	lowerCaseAddress := strings.ToLower(recoveredAddress)
+	recoveredAddress := strings.ToLower(crypto.PubkeyToAddress(*recoveredPubKey).Hex())
 
-	if lowerCaseAddress != publicKey {
+	if recoveredAddress != publicKey {
 		ctx.String(http.StatusForbidden, "Signature verify fail")
 	}
 }

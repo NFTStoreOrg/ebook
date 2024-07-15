@@ -38,7 +38,7 @@
     <CardSlide title="教科書" slideBgColor="bg-orange-200" :cardStore=cardStore.textbook></CardSlide>
     <CardSlide title="參考書" slideBgColor="bg-red-100" :cardStore=cardStore.referenceBook></CardSlide>
     <CardSlide title="兒童書籍" slideBgColor="bg-sky-200" :cardStore=cardStore.childrenBook></CardSlide>
-    <CardSlide title="互動書" slideBgColor="bg-violet-100" :cardStore=cardStore.newBooks></CardSlide>
+    <CardSlide title="互動書" slideBgColor="bg-violet-100" :cardStore=cardStore.live></CardSlide>
     <CardSlide title="影片" slideBgColor="bg-violet-100" :cardStore=cardStore.video></CardSlide>
     <CardSlide title="其他" slideBgColor="bg-violet-100" :cardStore=cardStore.otherBook></CardSlide>
 
@@ -55,6 +55,7 @@ cardStore.getClassBook("children")
 cardStore.getClassBook("video")
 cardStore.getClassBook("reference")
 cardStore.getClassBook("other")
+cardStore.getLiveBook()
 </script>
 <style scoped>
 .marquee {

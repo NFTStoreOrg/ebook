@@ -28,9 +28,10 @@
                     <div class="text-2xl font-medium text-sky-600 mb-4 flex justify-between">
                         <span class="text-sm">優惠價</span>${{ showStore.price }}
                     </div>
-                    <button type="button"
-                        class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">借閱
-                        / 閱讀</button>
+                    <button type="button" v-if="canRead" @click="handleReadPermission"
+                        class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">閱讀</button>
+                    <button type="button" v-if="!canRead" @click="handleRent"
+                        class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">借閱</button>
                 </div>
             </div>
         </div>
@@ -87,6 +88,8 @@ import CardSlide from '../components/CardSlide.vue';
 import { useCardStore } from '../store/card.ts';
 import { useRoute } from 'vue-router';
 import { onMounted, ref, watchEffect } from 'vue';
+import axios from 'axios';
+import { useSignatureStore } from '../store/personal_sign.ts';
 
 //  Define bookArray's class
 interface Book {
@@ -98,11 +101,15 @@ interface Book {
 
 const showStore = useBookInfoStore()
 const cardInfoStore = useCardStore()
+const sign = useSignatureStore()
 const route = useRoute()
 
 
 const bookClass = ref('')
 const bookArray = ref<Book[]>([]);
+let canRead = ref(false)
+let address: string | null | undefined;
+sign.initSDK()
 
 onMounted(async () => {
     const tokenId = route.query.bookId
@@ -113,9 +120,12 @@ onMounted(async () => {
         cardInfoStore.getClassBook(bookClass.value)
         await showStore.getBookRemain(tokenId)
     }
+    await sign.onConnect()
+    address = sign.account
+    await readOrRent()
 })
 
-watchEffect(() => {
+watchEffect(async () => {
     if (bookClass.value == "reference") {
         bookArray.value = cardInfoStore.referenceBook
     } else if (bookClass.value == "children") {
@@ -127,6 +137,70 @@ watchEffect(() => {
     } else if (bookClass.value == "video") {
         bookArray.value = cardInfoStore.video
     }
+
 })
+
+//  Use for display button word read or rent.
+async function readOrRent() {
+    let tokenId = route.query.bookId
+    try {
+        let response = await axios.get("https://yisinnft.org/api/" + address + "/" + tokenId + "/read")
+        canRead.value = response.data.rentStatus
+    } catch (err) {
+        console.error(err)
+    }
+}
+
+async function handleReadPermission() {
+
+    //  Get signature
+    let signature: any;
+    try {
+        signature = await sign.getSign()
+    } catch (err) {
+        console.error(err)
+        return
+    }
+
+    let tokenId = route.query.bookId;
+    try {
+        let response = await axios({
+            url: "https://yisinnft.org/api/" + address + "/" + tokenId + "/" + signature,
+            method: 'GET',
+            responseType: 'blob',    // Ensure that response type is blob
+        });
+
+        // Extract file name in header
+        const contentDisposition = response.headers['content-disposition'];
+        let fileName = 'downloaded_file';
+        if (contentDisposition) {
+            const fileNameMatch = contentDisposition.match(/filename="?(.+)"?/);
+            if (fileNameMatch && fileNameMatch.length === 2) {
+                fileName = fileNameMatch[1];
+            }
+        } else {
+            console.error("Get header fail!")
+            return
+        }
+
+        // Simulation user click
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        console.log(response.data)
+        const link = document.createElement('a');
+        link.href = url;     // Set url to download
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);     // Add the a tag
+        link.click();        // Click link
+        document.body.removeChild(link);     // Remove the a tag
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+async function handleRent() {
+    if (!sign.connected) {
+        await sign.onConnect()
+    }
+}
 
 </script>
