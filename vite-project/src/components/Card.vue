@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { useCardStore } from '../store/card'
 const cardStore = useCardStore()
+defineProps<{ cardWidth2: string }>()
+
 </script>
 <template>
-    <div v-for="book in cardStore.books"
+    <div v-for="book in cardStore.books" :class="cardWidth2"
         class="max-w-[226px] min-w-[150px] p-2 group hover:cursor-pointer hover:shadow-lg transition duration-500 ease hover:-translate-y-2 snap-center">
         <div class="relative">
             <img class="group-hover:blur-[3px]" :src="book.imgUrl" alt="">
