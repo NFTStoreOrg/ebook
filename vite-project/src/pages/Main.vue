@@ -30,24 +30,45 @@
         </p>
         <hr class="block mb-0 w-full" />
         <div class="grid grid-cols-1 gap-8 mt-3 lg:grid-cols-4 md:grid-cols-3 xl:grid-cols-6 mx-auto">
-            <Card :cardStore=cardStore.newBooks></Card>
+            <Card :cardStore=cardStore.newBooks cardWidth2="max-w-[226px]"></Card>
         </div>
     </div>
 
     <!-- section3 -->
-    <CardSlide title="教科書" slideBgColor="bg-orange-200" :cardStore=cardStore.textbook></CardSlide>
-    <CardSlide title="參考書" slideBgColor="bg-red-100" :cardStore=cardStore.referenceBook></CardSlide>
-    <CardSlide title="兒童書籍" slideBgColor="bg-sky-200" :cardStore=cardStore.childrenBook></CardSlide>
-    <CardSlide title="互動書" slideBgColor="bg-violet-100" :cardStore=cardStore.live></CardSlide>
-    <CardSlide title="影片" slideBgColor="bg-violet-100" :cardStore=cardStore.video></CardSlide>
-    <CardSlide title="其他" slideBgColor="bg-violet-100" :cardStore=cardStore.otherBook></CardSlide>
+    <CardSlide title="教科書" slideBgColor="bg-orange-200" cardWidth1="w-[150px]" :cardStore=cardStore.textbook></CardSlide>
+    <CardSlide title="參考書" slideBgColor="bg-red-100" cardWidth1="w-[150px]" :cardStore=cardStore.referenceBook></CardSlide>
+    <div class="container h-[80vh] min-w-[95%] bg-violet-300/25 rounded-3xl text-9xl content-center fontfont-bold">
+
+        <div class="flex">
+            <div>E</div>
+            <div>B</div>
+            <div>O</div>
+            <div>O</div>
+            <div>K</div>
+        </div>
+        <div>STORE</div>
+    </div>
+    <CardSlide title="兒童書籍" slideBgColor="bg-sky-200" cardWidth1="w-[150px]" :cardStore=cardStore.childrenBook></CardSlide>
+    <CardSlide title="互動書" slideBgColor="bg-violet-100" cardWidth1="w-[150px]" :cardStore=cardStore.live></CardSlide>
+    <CardSlide title="影片" slideBgColor="bg-violet-100" cardWidth1="w-[150px]" :cardStore=cardStore.video></CardSlide>
+    <CardSlide title="其他" slideBgColor="bg-violet-100" cardWidth1="w-[150px]" :cardStore=cardStore.otherBook></CardSlide>
 
 </template>
 <script setup lang="ts" name="Main">
 // import { ref } from 'vue'
 import Card from '../components/Card.vue'
 import CardSlide from '../components/CardSlide.vue'
-import { useCardStore } from '../store/card'
+window.addEventListener("scroll", handleScroll);
+function handleScroll() {
+    if (window.scrollY >= 200) {
+
+
+    }
+
+    else {
+    }
+
+}import { useCardStore } from '../store/card'
 const cardStore = useCardStore()
 cardStore.getNewestBook()
 cardStore.getClassBook("textbook")

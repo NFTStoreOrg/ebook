@@ -1,15 +1,17 @@
-<script setup lang="ts">
+<script setup lang="ts" name="card">
+
+
 interface Store {
     title: string;
     imgUrl: string;
     price: number;
     bookId:number;
 }
-defineProps<{ cardStore: Store[] }>()
+defineProps<{ cardStore: Store[] , cardWidth2: string}>()
 
 </script>
 <template>
-    <div v-for="book in cardStore"
+    <div v-for="book in cardStore" :class="cardWidth2"
         class="max-w-[226px] min-w-[150px] p-2 group hover:cursor-pointer hover:shadow-lg transition duration-500 ease hover:-translate-y-2 snap-center">
         <div class="relative">
             <img class="group-hover:blur-[3px]" :src="book.imgUrl">
