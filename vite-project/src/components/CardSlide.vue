@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import Card from '../components/Card.vue'
 import { onMounted, ref } from 'vue'
-defineProps<{ title: string, slideBgColor: string, cardWidth1: string }>()
 const content = ref()
 const leftArrow = ref(false)
 const rightArrow = ref(true)
@@ -44,7 +43,7 @@ function slideL() {
     }
 }
 
-defineProps<{ title: string, slideBgColor: string, cardStore: { title: string; imgUrl: string; price: number; bookId: number; }[] }>()
+defineProps<{ title: string, slideBgColor: string, cardStore: { title: string; imgUrl: string; price: number; bookId: number; }[], cardWidth1: string }>()
 
 </script>
 <template>
@@ -64,7 +63,7 @@ defineProps<{ title: string, slideBgColor: string, cardStore: { title: string; i
         </button>
         <div ref="content"
             class="scroll-smooth flex snap-x snap-mandatory items-center gap-x-3 overflow-x-auto overflow-x-hidden p-4">
-            <card></card>
+            <card :cardStore=cardStore :card-width2=cardWidth1></card>
         </div>
         <button type="button" @click="slideR" v-show="rightArrow" class="absolute end-0 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 
             focus:outline-none focus:ring-blue-300 font-medium rounded-full text-sm p-2.5 
