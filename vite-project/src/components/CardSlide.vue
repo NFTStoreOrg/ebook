@@ -4,11 +4,13 @@ import { onMounted, ref } from 'vue'
 const content = ref()
 const leftArrow = ref(false)
 const rightArrow = ref(true)
+
 onMounted(() => {
     if (content.value instanceof HTMLElement) {
         const clientWidth = content.value.clientWidth
         const maxScrollWidth = content.value.scrollWidth
-        if (maxScrollWidth <= clientWidth) {
+        console.log(clientWidth,maxScrollWidth)
+        if (maxScrollWidth < clientWidth) {
             rightArrow.value = false
         }
     }
@@ -27,9 +29,6 @@ function slideR() {
     } else {
         content.value.scrollLeft += clientWidth
     }
-    setTimeout(() => {
-        console.log(content.value.scrollLeft)
-    }, 10000);
 
 }
 function slideL() {
@@ -44,7 +43,6 @@ function slideL() {
 }
 
 defineProps<{ title: string, slideBgColor: string, cardStore: { title: string; imgUrl: string; price: number; bookId: number; }[], cardWidth1: string }>()
-
 </script>
 <template>
     <div class="row mx-auto text-2xl max-w-[95%] font-bold pl-3 pt-3 tracking-wider">
@@ -62,8 +60,9 @@ defineProps<{ title: string, slideBgColor: string, cardStore: { title: string; i
             </svg>
         </button>
         <div ref="content"
-            class="scroll-smooth flex snap-x snap-mandatory items-center gap-x-3 overflow-x-auto overflow-x-hidden p-4">
-            <card :cardStore=cardStore :card-width2=cardWidth1></card>
+            class="scroll-smooth flex snap-x snap-mandatory items-center gap-x-3 overflow-x-auto overflow-x-hidden p-4"
+            style="mask-image: linear-gradient(to left, transparent, black 80px, black calc(100% - 80px), transparent);">
+            <Card :cardStore="cardStore" :card-width2="cardWidth1"></Card>
         </div>
         <button type="button" @click="slideR" v-show="rightArrow" class="absolute end-0 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 
             focus:outline-none focus:ring-blue-300 font-medium rounded-full text-sm p-2.5 
@@ -74,5 +73,4 @@ defineProps<{ title: string, slideBgColor: string, cardStore: { title: string; i
             </svg>
         </button>
     </div>
-
 </template>

@@ -77,7 +77,7 @@
         </div>
         <div class="relative text-xl font-bold top-20 mt-6">其他可能有興趣</div>
         <div class="relative top-20 min-h-96 rounded-lg mb-6">
-            <CardSlide :title=showStore.class.className slide-bg-color="bg-purple-100" :cardStore=bookArray></CardSlide>
+            <CardSlide :title=showStore.class.className slide-bg-color="bg-purple-100" :cardStore=bookArray cardWidth1="w-[150px]"></CardSlide>
         </div>
     </div>
 </template>
@@ -136,7 +136,6 @@ watchEffect(async () => {
     } else if (bookClass.value == "video") {
         bookArray.value = cardInfoStore.video
     }
-
 })
 
 //  Use for display button word read or rent.
