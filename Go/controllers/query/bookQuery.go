@@ -62,7 +62,7 @@ func (con QueryBookController) GetBookInformation(ctx *gin.Context) {
 	}
 
 	db := con.DB.Database("ebook")
-	collections, err := db.ListCollectionNames(context.TODO(), bson.M{})
+	collections, err := db.ListCollectionNames(context.Background(), bson.M{})
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, err.Error())
 	}

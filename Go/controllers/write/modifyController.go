@@ -10,9 +10,11 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/gin-gonic/gin"
+	"github.com/mitchellh/mapstructure"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"yisinnft.org/m/v2/controllers/query"
+	"yisinnft.org/m/v2/models"
 )
 
 type ModifyController struct {
@@ -30,6 +32,18 @@ func (con ModifyController) AdjustBookInformation(ctx *gin.Context) {
 		return
 	}
 
+	//	Update elasticsearch info
+	var book models.Book
+	if err := mapstructure.Decode(updateData, &book); err != nil {
+		ctx.String(http.StatusBadRequest, err.Error())
+	}
+
+	err := models.UpdateESDocument(book)
+	if err != nil {
+		ctx.String(http.StatusInternalServerError, err.Error())
+	}
+
+	//	Update DB info
 	db := con.DB.Database("ebook")
 	collections, err := db.ListCollectionNames(context.Background(), bson.D{})
 	if err != nil {
@@ -127,7 +141,7 @@ This request will not trigger a blockchain transaction or cost any gas fees.`)
 	lowerCaseAddress := strings.ToLower(recoveredAddress)
 
 	if ok := address == lowerCaseAddress; !ok {
-		ctx.String(http.StatusForbidden,"Signature not match.")
+		ctx.String(http.StatusForbidden, "Signature not match.")
 	}
 
 	ctx.Next()

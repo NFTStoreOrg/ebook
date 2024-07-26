@@ -61,7 +61,7 @@
                         </div>
                         <!-- Modal body -->
                         <div class="p-4 md:p-5">
-                            <form class="space-y-4" @submit.prevent="handleUploadBook">
+                            <form class="space-y-4" @submit.prevent="handleUploadBook" enctype="multipart/form-data">
                                 <div>
                                     <label
                                         class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">書名</label>
@@ -179,14 +179,14 @@
                                         class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">書籍封面</label>
                                     <input
                                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                                        @change="handleFileChange('bookCover')" type="file" name="bookCover" required />
+                                        @change="handleFileChange('bookCover')" type="file" name="bookCover" ref="selectedBookCoverFile" required />
                                 </div>
                                 <div>
                                     <label
                                         class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">書籍檔案</label>
                                     <input
                                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                                        @change="handleFileChange('book')" type="file" name="book" required />
+                                        @change="handleFileChange('book')" type="file" name="book" ref="selectedBookFile" required />
                                 </div>
                                 <button type="submit"
                                     class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">上傳</button>
@@ -318,11 +318,12 @@ const handleBackgroundClick = (event: any) => {
 
 const handleFileChange = (type: string) => (event: Event) => {
     const target = event.target as HTMLInputElement
+    console.log(target.files![0])
     //  Get file
     if (target.files && target.files.length > 0) {
-        if (type === 'bookCover') {
+        if (type == "bookCover") {
             selectedBookCoverFile.value = target.files[0]
-        } else if (type === 'book') {
+        } else if (type == "book") {
             selectedBookFile.value = target.files[0]
         }
     }
@@ -338,9 +339,10 @@ const handleUploadBook = async () => {
         console.log(err)
         return
     }
-    console.log(signature)
     //  組合上傳的檔案及uploadData資料
     const formData = new FormData()
+    console.log(selectedBookCoverFile.value)
+    console.log(selectedBookFile.value)
     if (selectedBookCoverFile.value) {
         formData.append('bookCover', selectedBookCoverFile.value)
     }
@@ -349,6 +351,7 @@ const handleUploadBook = async () => {
     }
 
     Object.keys(uploadData.value).forEach(key => {
+        console.log((uploadData.value as any)[key])
         formData.append(key, (uploadData.value as any)[key])
     })
 
