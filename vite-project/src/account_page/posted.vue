@@ -355,7 +355,7 @@ const handleUploadBook = async () => {
         formData.append(key, (uploadData.value as any)[key])
     })
 
-    console.log(formData)
+    console.log(formData.values)
 
     //  post to back-end
     try {
