@@ -31,6 +31,7 @@ func main() {
 	//	Initial routers
 	routers.QueryNFTInit(r)
 	routers.UploadInit(r)
+	routers.SearchInit(r)
 
 	r.Run(":8080")
 }

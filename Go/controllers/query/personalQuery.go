@@ -131,7 +131,7 @@ func (con QueryPersonalController) GetPersonalRentedBook(ctx *gin.Context) {
 			//	Find tokenId in extractedItems
 			filter := bson.M{"tokenId": bson.M{"$in": extractedItems}}
 
-			cur, _ := coll.Find(context.TODO(), filter)
+			cur, _ := coll.Find(context.Background(), filter)
 			if cur == nil {
 				return
 			}
