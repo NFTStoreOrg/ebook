@@ -118,7 +118,7 @@ func (con QueryPersonalController) GetPersonalRentedBook(ctx *gin.Context) {
 			books = append(books, book)
 		}
 	}()
-
+ 
 	var wg sync.WaitGroup
 
 	for _, collName := range collections {
