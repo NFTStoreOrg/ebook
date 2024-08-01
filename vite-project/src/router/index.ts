@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Main from '../pages/Main.vue'
-import ReferenceBook from '../pages/ReferenceBook.vue'
+import Search from '../pages/Search.vue'
 import Product from '../pages/Product.vue'
 
 import Account from '../pages/Account.vue'
@@ -19,9 +19,9 @@ const router = createRouter({
             }
         },
         {
-            path: '/ReferenceBook',
+            path: '/Search',
             components: {
-                default: ReferenceBook,
+                default: Search,
                 Header: Header,
             }
         },

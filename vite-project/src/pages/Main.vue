@@ -54,10 +54,12 @@
     <CardSlide title="其他" slideBgColor="bg-violet-100" cardWidth1="w-[150px]" :cardStore=cardStore.otherBook></CardSlide>
 
 </template>
+
 <script setup lang="ts" name="Main">
 // import { ref } from 'vue'
 import Card from '../components/Card.vue'
 import CardSlide from '../components/CardSlide.vue'
+import { useCardStore } from '../store/card'
 window.addEventListener("scroll", handleScroll);
 function handleScroll() {
     if (window.scrollY >= 200) {
@@ -68,7 +70,7 @@ function handleScroll() {
     else {
     }
 
-}import { useCardStore } from '../store/card'
+}
 const cardStore = useCardStore()
 cardStore.getNewestBook()
 cardStore.getClassBook("textbook")
@@ -78,6 +80,7 @@ cardStore.getClassBook("reference")
 cardStore.getClassBook("other")
 cardStore.getLiveBook()
 </script>
+
 <style scoped>
 .marquee {
     animation: slide 10s linear infinite;

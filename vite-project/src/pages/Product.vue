@@ -124,7 +124,7 @@ onMounted(async () => {
     await readOrRent()
 })
 
-watchEffect(async () => {
+watchEffect(() => {
     if (bookClass.value == "reference") {
         bookArray.value = cardInfoStore.referenceBook
     } else if (bookClass.value == "children") {

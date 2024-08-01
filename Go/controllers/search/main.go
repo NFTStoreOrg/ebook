@@ -116,5 +116,7 @@ func (con SearchController) FuzzySearch(ctx *gin.Context) {
 		item["score"] = hit.Score_
 		result = append(result, item)
 	}
-	ctx.JSON(http.StatusOK, result)
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": result,
+	})
 }

@@ -8,8 +8,8 @@
         <RouterLink to="/" class="text-sm font-semibold"
           :class="$route.path === '/' ? 'text-gray-900' : 'text-indigo-900'">首頁</RouterLink>
         <RouterLink to="/" class="text-sm font-semibold text-indigo-900">教科書</RouterLink>
-        <RouterLink to="/ReferenceBook" class="text-sm font-semibold"
-          :class="$route.path === '/ReferenceBook' ? 'text-gray-900' : 'text-indigo-900'">參考書</RouterLink>
+        <RouterLink to="/Search" class="text-sm font-semibold"
+          :class="$route.path === '/Search' ? 'text-gray-900' : 'text-indigo-900'">搜尋</RouterLink>
         <RouterLink to="/" class="text-sm font-semibold text-indigo-900">兒童書籍</RouterLink>
         <RouterLink to="/" class="text-sm font-semibold text-indigo-900">互動書</RouterLink>
         <RouterLink to="/" class="text-sm font-semibold text-indigo-900">影片</RouterLink>
@@ -119,5 +119,4 @@ function handleScroll() {
   }
 
 }
-
 </script>
