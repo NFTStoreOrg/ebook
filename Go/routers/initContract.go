@@ -12,9 +12,11 @@ import (
 var (
 	instance *ebook.YiSinEBook
 	once     sync.Once
+	mutex    sync.Mutex
 )
 
 func InitInstance() {
+	mutex.Lock()
 	once.Do(func() {
 		client, err := ethclient.Dial("https://ethereum-sepolia-rpc.publicnode.com")
 		if err != nil {
@@ -27,6 +29,7 @@ func InitInstance() {
 		}
 		instance = inst
 	})
+	mutex.Unlock()
 }
 
 func GetInstance() *ebook.YiSinEBook {

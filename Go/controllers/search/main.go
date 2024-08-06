@@ -20,6 +20,7 @@ type SearchController struct {
 func (con SearchController) CreateIndex(ctx *gin.Context) {
 	title := ctx.Param("collection")
 	models.CreateESIndex(title)
+	ctx.JSON(http.StatusOK, gin.H{"status": true})
 }
 
 func (con SearchController) SyncDocument(ctx *gin.Context) {
@@ -99,7 +100,7 @@ func (con SearchController) FuzzySearch(ctx *gin.Context) {
 		Do(context.Background())
 
 	if err != nil {
-		ctx.String(http.StatusInternalServerError, err.Error())
+		ctx.String(http.StatusBadGateway, err.Error())
 		return
 	}
 
@@ -116,6 +117,7 @@ func (con SearchController) FuzzySearch(ctx *gin.Context) {
 		item["score"] = hit.Score_
 		result = append(result, item)
 	}
+	
 	ctx.JSON(http.StatusOK, gin.H{
 		"data": result,
 	})

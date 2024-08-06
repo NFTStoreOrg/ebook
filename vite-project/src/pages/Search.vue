@@ -9,14 +9,12 @@
             d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
         </svg>
       </div>
-      <input type="search" v-model="inputValue" id="default-search" class="search-input" placeholder="搜尋書名..."
-        required />
+      <input type="search" v-model="inputValue" id="default-search" class="search-input" placeholder="搜尋書名..." />
     </div>
   </form>
-  <div style="display: flex; justify-content: center;">
+  <div style="display: flex;">
     <div ref="content"
-      class="flex snap-x snap-mandatory gap-x-3 overflow-x-auto p-4"
-      style="flex-wrap: wrap;">
+      class="overflow-x-auto p-4 cardContainer justify-start" >
       <Card :cardStore=result cardWidth2="w-[150px]"></Card>
     </div>
 
@@ -62,6 +60,7 @@ watchEffect(async () => {
 
 </script>
 <style>
+/*   Search input style */ 
 .search-input {
   width: 100%;
   padding: 1rem;
@@ -74,11 +73,17 @@ watchEffect(async () => {
   backdrop-filter: blur(50px);
   -webkit-backdrop-filter: blur(50px);
   box-shadow: 0 4px 6px rgba(0, 0, 0, .1);
-  transition: border-color .3s box-shadow .3s;
 }
 
 .search-input:focus {
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, .5);
 }
+
+/* Card container style */
+.cardContainer{
+  display: flex;
+  flex-wrap: wrap;
+}
+
 </style>
