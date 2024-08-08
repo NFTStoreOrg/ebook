@@ -179,14 +179,14 @@
                                         class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">書籍封面</label>
                                     <input
                                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                                        @change="handleFileChange('bookCover')" type="file" name="bookCover" ref="selectedBookCoverFile" required />
+                                        type="file" name="bookCover" @change="handleBookCoverChange" required />
                                 </div>
                                 <div>
                                     <label
                                         class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">書籍檔案</label>
                                     <input
                                         class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                                        @change="handleFileChange('book')" type="file" name="book" ref="selectedBookFile" required />
+                                        type="file" name="book" @change="handleBookChange" required />
                                 </div>
                                 <button type="submit"
                                     class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">上傳</button>
@@ -298,14 +298,14 @@ const uploadData = ref({
     live: false,
 })
 
+const bookCover = ref<File | null>(null)
+const book = ref<File | null>(null)
+
 onMounted(async () => {
     await sign.onConnect()
     uploadData.value.uploader = <string>sign.account
     console.log(sign.account)
 })
-
-const selectedBookCoverFile = ref<File | null>(null)
-const selectedBookFile = ref<File | null>(null)
 
 const handleBackgroundClick = (event: any) => {
     if (event.target.id === 'edit-modal' || event.target.id === 'upload-modal') {
@@ -316,17 +316,19 @@ const handleBackgroundClick = (event: any) => {
     }
 };
 
-const handleFileChange = (type: string) => (event: Event) => {
+const handleBookCoverChange = (event: Event) => {
     const target = event.target as HTMLInputElement
-    console.log(target.files![0])
-    //  Get file
     if (target.files && target.files.length > 0) {
-        if (type == "bookCover") {
-            selectedBookCoverFile.value = target.files[0]
-        } else if (type == "book") {
-            selectedBookFile.value = target.files[0]
-        }
+        bookCover.value = target.files[0]
     }
+    console.log(bookCover.value)
+}
+const handleBookChange = (event: Event) => {
+    const target = event.target as HTMLInputElement
+    if (target.files && target.files.length > 0) {
+        book.value = target.files[0]
+    }
+    console.log(book.value)
 }
 
 const handleUploadBook = async () => {
@@ -341,19 +343,17 @@ const handleUploadBook = async () => {
     }
     //  組合上傳的檔案及uploadData資料
     const formData = new FormData()
-    console.log(selectedBookCoverFile.value)
-    console.log(selectedBookFile.value)
-    if (selectedBookCoverFile.value) {
-        formData.append('bookCover', selectedBookCoverFile.value)
-    }
-    if (selectedBookFile.value) {
-        formData.append('book', selectedBookFile.value)
-    }
 
     Object.keys(uploadData.value).forEach(key => {
         console.log((uploadData.value as any)[key])
         formData.append(key, (uploadData.value as any)[key])
     })
+    if (book.value) {
+        formData.append('book', book.value)
+    }
+    if (bookCover.value) {
+        formData.append('bookCover', bookCover.value)
+    }
 
     console.log(formData.values)
 

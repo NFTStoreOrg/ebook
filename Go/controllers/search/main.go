@@ -3,10 +3,12 @@ package search
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
+	"strings"
 	"sync"
 
-	"github.com/elastic/go-elasticsearch/v8/typedapi/types"
+	"github.com/elastic/go-elasticsearch/v8/esapi"
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -83,41 +85,61 @@ func (con SearchController) SyncDocument(ctx *gin.Context) {
 }
 
 func (con SearchController) FuzzySearch(ctx *gin.Context) {
-	title := ctx.Param("title")
+	content := ctx.Param("title")
 
 	//	Construct query request
-	query := types.Query{
-		Match: map[string]types.MatchQuery{
-			"title": {Query: title, Fuzziness: "AUTO"},
-		},
+	query := fmt.Sprintf(`{
+		"query": {
+			"multi_match": {
+				"query": "%s",
+				"fields": ["title", "writer"],
+				"fuzziness": "AUTO"
+			}
+		}
+	}`, content)
+
+	size := 1000
+	scores := true
+	req := esapi.SearchRequest{
+		Index:       []string{"children", "other", "reference", "textbook", "video"},
+		Body:        strings.NewReader(query),
+		Size:        &size,
+		TrackScores: &scores,
 	}
 
-	//	Execute query
-	res, err := models.EsClient.Search().Index("children,other,reference,textbook,video").
-		Query(&query).
-		Size(1000).
-		TrackScores(true). //	Enable scores
-		Do(context.Background())
-
+	res, err := req.Do(context.Background(), models.EsClient)
 	if err != nil {
-		ctx.String(http.StatusBadGateway, err.Error())
+		ctx.String(http.StatusInternalServerError, "Error getting response: "+err.Error())
+		return
+	}
+	defer res.Body.Close()
+
+	if res.IsError() {
+		ctx.String(http.StatusInternalServerError, "Error in response: "+res.String())
 		return
 	}
 
 	var result []map[string]interface{}
+	var r map[string]interface{}
 
-	for _, hit := range res.Hits.Hits {
+	if err := json.NewDecoder(res.Body).Decode(&r); err != nil {
+		ctx.String(http.StatusInternalServerError, "Error parsing the response body: "+err.Error())
+		return
+	}
+
+	hits := r["hits"].(map[string]interface{})["hits"].([]interface{})
+
+	for _, hit := range hits {
 		var item map[string]interface{}
-		//	Unmarshal json to item struct
-		if err = json.Unmarshal(hit.Source_, &item); err != nil {
-			ctx.String(http.StatusInternalServerError, err.Error())
-			return
-		}
-		//	Add score key
-		item["score"] = hit.Score_
+		source := hit.(map[string]interface{})["_source"]
+		score := hit.(map[string]interface{})["_score"]
+
+		item = source.(map[string]interface{})
+		item["score"] = score
+
 		result = append(result, item)
 	}
-	
+
 	ctx.JSON(http.StatusOK, gin.H{
 		"data": result,
 	})

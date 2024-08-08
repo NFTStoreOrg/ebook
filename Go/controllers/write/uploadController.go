@@ -20,6 +20,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"go.mongodb.org/mongo-driver/mongo"
 	ebook "yisinnft.org/m/v2/contracts"
+	"yisinnft.org/m/v2/models"
 )
 
 type UploadController struct {
@@ -46,9 +47,6 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 	edition := ctx.PostForm("edition")
 	pagesStr := ctx.PostForm("pages")
 	liveStr := ctx.PostForm("live")
-
-	fmt.Println("Headers:",ctx.Request.Header)
-	fmt.Println("Content-Type:",ctx.Request.Header.Get("Content-Type"))
 
 	//	Transform amount(string) to amount(big.Int)
 	amount := new(big.Int)
@@ -150,12 +148,11 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 	}
 
 	//	Get this book's tokenId to
-	tokenId, err := con.Instance.TotalSupplyBook(nil)
+	tokenIdInt, err := models.RedisClient.Incr(context.Background(), "tokenId").Result()
 	if err != nil {
-		ctx.String(http.StatusBadGateway, err.Error())
-		return
+		ctx.String(http.StatusInternalServerError, "Error increasing tokenId in redis.")
 	}
-	tokenIdStr := tokenId.String()
+	tokenIdStr := strconv.FormatInt(tokenIdInt-1, 10)
 
 	//	Generate file's path and name
 	dst := path.Join("./static/upload", tokenIdStr+extName)
@@ -165,11 +162,13 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 	ctx.SaveUploadedFile(file, dst)
 	ctx.SaveUploadedFile(bookFile, bookDst)
 
+	//	Merge image file path
 	httpDst := "https://yisinnft.org/images/" + tokenIdStr + extName
 
-	tokenIdInt := tokenId.Int64()
+	//	Change all big int variable to int64
 	amountInt := amount.Int64()
 	maxRentTimeInt := maxRentTime.Int64()
+
 	gradeInt, err := strconv.Atoi(grade)
 	if err != nil {
 		ctx.String(http.StatusBadRequest, err.Error())
@@ -178,6 +177,39 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 
 	//	Uploader to lower case
 	uploader = strings.ToLower(uploader)
+
+	//	Add book information into elasticsearch
+	bookClass := models.Class{
+		ClassName: className,
+		Grade:     gradeInt,
+	}
+	bookInfo := models.Book{
+		Title:        title,
+		Writer:       writer,
+		Publisher:    publisher,
+		PublishDate:  publishDate,
+		ISBN:         isbn,
+		Introduction: introduction,
+		Chapter:      chapter,
+		MaxRentTime:  maxRentTimeInt,
+		Price:        price,
+		Class:        bookClass,
+		Amount:       amountInt,
+		Edition:      edition,
+		Pages:        pages,
+		Uploader:     uploader,
+		Live:         live,
+		TokenId:      tokenIdInt - 1,
+		UploadTime:   time.Now().Unix(),
+		CoverImage:   httpDst,
+	}
+
+	_, err = models.CreateESDocument(bookInfo)
+	if err != nil {
+		ctx.String(http.StatusBadGateway, "Error occur while create document in elasticsearch")
+		return
+	}
+
 	//	Write metadata to database
 	metaData := gin.H{
 		"title":        title,
@@ -198,7 +230,7 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 		"pages":      pages,
 		"uploader":   uploader,
 		"live":       live,
-		"tokenId":    tokenIdInt,
+		"tokenId":    tokenIdInt - 1,
 		"uploadTime": time.Now().Unix(),
 		"coverImage": httpDst,
 	}
