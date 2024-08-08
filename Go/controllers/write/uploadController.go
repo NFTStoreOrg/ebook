@@ -152,7 +152,7 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, "Error increasing tokenId in redis.")
 	}
-	tokenIdStr := strconv.FormatInt(tokenIdInt-1, 10)
+	tokenIdStr := strconv.FormatInt(tokenIdInt-2, 10)
 
 	//	Generate file's path and name
 	dst := path.Join("./static/upload", tokenIdStr+extName)
@@ -199,7 +199,7 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 		Pages:        pages,
 		Uploader:     uploader,
 		Live:         live,
-		TokenId:      tokenIdInt - 1,
+		TokenId:      tokenIdInt - 2,
 		UploadTime:   time.Now().Unix(),
 		CoverImage:   httpDst,
 	}

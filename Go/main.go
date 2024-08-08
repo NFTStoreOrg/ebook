@@ -33,7 +33,8 @@ func main() {
 
 	//	Initial tokenId in redis
 	tokenId, _ := routers.GetInstance().TotalSupplyBook(nil)
-	err = models.RedisClient.SetNX(context.Background(), "tokenId", tokenId, 0).Err()
+	tokenId64 := tokenId.Int64()
+	err = models.RedisClient.SetNX(context.Background(), "tokenId", tokenId64, 0).Err()
 	if err != nil {
 		log.Fatal("Error setting redis key:", err)
 	}
