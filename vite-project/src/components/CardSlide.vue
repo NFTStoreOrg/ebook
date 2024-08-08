@@ -20,7 +20,6 @@ function slideR() {
     const clientWidth = content.value.clientWidth
     const maxScrollWidth = content.value.scrollWidth
     console.log(clientWidth, maxScrollWidth, content.value.scrollLeft)
-
     if ((maxScrollWidth - content.value.scrollLeft) - clientWidth <= clientWidth) {
         content.value.scrollLeft = (maxScrollWidth - clientWidth)
         rightArrow.value = false
@@ -28,14 +27,11 @@ function slideR() {
     } else {
         content.value.scrollLeft += clientWidth
     }
-    setTimeout(() => {
-        console.log(content.value.scrollLeft)
-    }, 10000);
-
 }
 function slideL() {
     rightArrow.value = true
     const clientWidth = content.value.clientWidth
+    console.log(clientWidth, content.value.scrollLeft)
     if (content.value.scrollLeft < clientWidth) {
         leftArrow.value = false
         content.value.scrollLeft = 0
@@ -43,6 +39,7 @@ function slideL() {
         content.value.scrollLeft -= clientWidth
     }
 }
+
 </script>
 <template>
     <div class="row mx-auto text-2xl max-w-[95%] font-bold pl-3 pt-3 tracking-wider">

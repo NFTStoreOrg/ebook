@@ -21,8 +21,6 @@
                     showStore.bookInfo.publisher }}</div>
                 <div class="text-lg tracking-wider font-medium">
                     出版日期:{{ showStore.bookInfo.publishDate }}</div>
-
-
             </div>
             <div class="rounded-md bg-blue-50/50 flex justify-center min-w-[70%] justify-self-end p-4">
                 <div class="content-center">
@@ -80,7 +78,7 @@
         </div>
         <div class="relative text-xl font-bold top-20 mt-6">其他可能有興趣</div>
         <div class="relative top-20 min-h-96 rounded-lg mb-6">
-            <CardSlide title="分類" slide-bg-color="bg-purple-100"></CardSlide>
+            <CardSlide title="分類" slide-bg-color="bg-purple-100" cardWidth1="w-[150px]"></CardSlide>
         </div>
     </div>
 </template>
