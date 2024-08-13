@@ -9,6 +9,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
@@ -27,6 +28,8 @@ type UploadController struct {
 	Instance *ebook.YiSinEBook
 	DB       *mongo.Client
 }
+
+var mutex sync.Mutex
 
 // Process book information and return success or not.
 func (con UploadController) UploadEbook(ctx *gin.Context) {
@@ -56,12 +59,12 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 		ctx.String(http.StatusBadRequest, "Amount transform fail")
 		return
 	}
-	//	if amount > 100
+	//	if amount > 1000
 	if amount.Cmp(big.NewInt(1000)) == 1 {
 		ctx.String(http.StatusBadRequest, "Amount exceed max supply 1000")
 		return
 	}
-
+	//	Check ISBN is valid or invalid
 	isbnValid := checkISBNValid(isbn)
 	if !isbnValid {
 		ctx.String(http.StatusBadRequest, "Invalid isbn value")
@@ -103,13 +106,13 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 	//	Address for contract send
 	address := common.HexToAddress(uploader)
 
+	//	Get file form post form
 	file, err := ctx.FormFile("bookCover")
 	if err != nil {
 		ctx.String(http.StatusBadRequest, err.Error())
 		fmt.Println("bookCover")
 		return
 	}
-
 	bookFile, err := ctx.FormFile("book")
 	if err != nil {
 		ctx.String(http.StatusBadRequest, err.Error())
@@ -147,12 +150,16 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 		return
 	}
 
-	//	Get this book's tokenId to
+	mutex.Lock()
+
+	//	Get this book's tokenId+1 from redis
+	//	If use redis Get, there may be two or more goroutines reading the same tokenId while high concurrency.
+	//	Use redis Incr, tokenId will be atomistic
 	tokenIdInt, err := models.RedisClient.Incr(context.Background(), "tokenId").Result()
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, "Error increasing tokenId in redis.")
 	}
-	tokenIdStr := strconv.FormatInt(tokenIdInt-2, 10)
+	tokenIdStr := strconv.FormatInt(tokenIdInt-1, 10)
 
 	//	Generate file's path and name
 	dst := path.Join("./static/upload", tokenIdStr+extName)
@@ -171,6 +178,7 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 
 	gradeInt, err := strconv.Atoi(grade)
 	if err != nil {
+		models.RedisClient.Decr(context.Background(), "tokenId")
 		ctx.String(http.StatusBadRequest, err.Error())
 		return
 	}
@@ -199,13 +207,14 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 		Pages:        pages,
 		Uploader:     uploader,
 		Live:         live,
-		TokenId:      tokenIdInt - 2,
+		TokenId:      tokenIdInt - 1,
 		UploadTime:   time.Now().Unix(),
 		CoverImage:   httpDst,
 	}
 
 	_, err = models.CreateESDocument(bookInfo)
 	if err != nil {
+		models.RedisClient.Decr(context.Background(), "tokenId")
 		ctx.String(http.StatusBadGateway, "Error occur while create document in elasticsearch")
 		return
 	}
@@ -238,12 +247,16 @@ func (con UploadController) UploadEbook(ctx *gin.Context) {
 
 	result, err := collection.InsertOne(context.Background(), metaData)
 	if err != nil {
+		models.RedisClient.Decr(context.Background(), "tokenId")
 		ctx.String(http.StatusInternalServerError, err.Error())
 		return
 	}
 
+	mutex.Unlock()
+
 	tx, err := con.uploadToBlockchain(amount, address, weiValue, maxRentTime)
 	if err != nil {
+		models.RedisClient.Decr(context.Background(), "tokenId")
 		ctx.String(http.StatusBadGateway, err.Error())
 		return
 	}

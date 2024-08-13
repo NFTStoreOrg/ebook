@@ -59,3 +59,7 @@ func UpdateESDocument(info Book) error {
 	}
 	return nil
 }
+
+func DeleteESDocument(info Book) {
+	EsClient.Delete(info.Class.ClassName, strconv.FormatInt(info.TokenId, 10))
+}
