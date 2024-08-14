@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"math/big"
+	"math/rand"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -21,6 +23,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	ebook "yisinnft.org/m/v2/contracts"
+	"yisinnft.org/m/v2/models"
 )
 
 type QueryPersonalController struct {
@@ -156,6 +159,28 @@ func (con QueryPersonalController) GetPersonalRentedBook(ctx *gin.Context) {
 		"data": books,
 	})
 
+	//	Marshal data to json and store it in redis.
+	jsonData, err := json.Marshal(books)
+	if err != nil {
+		log.Fatal(err.Error())
+		return
+	}
+
+	//	Set local random source
+	source := rand.NewSource(time.Now().UnixNano())
+	rng := rand.New(source)
+	//	Set min and max minutes
+	min := 5
+	max := 10
+	//	Calculate expiration time
+	expirationTime := (rng.Intn(max-min+1) + min) * int(time.Minute)
+
+	//	Set data in redis
+	_, err = models.RedisClient.Set(context.Background(), "personal_rented_"+addressStr, string(jsonData), time.Duration(expirationTime)).Result()
+	if err != nil {
+		log.Fatal("Error while set newest book in redis: ", err.Error())
+	}
+
 }
 
 func (con QueryPersonalController) GetPersonalPublish(ctx *gin.Context) {
@@ -210,6 +235,28 @@ func (con QueryPersonalController) GetPersonalPublish(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"data": books,
 	})
+
+	//	Marshal data to json and store it in redis.
+	jsonData, err := json.Marshal(books)
+	if err != nil {
+		log.Fatal(err.Error())
+		return
+	}
+
+	//	Set local random source
+	source := rand.NewSource(time.Now().UnixNano())
+	rng := rand.New(source)
+	//	Set min and max minutes
+	min := 5
+	max := 10
+	//	Calculate expiration time
+	expirationTime := (rng.Intn(max-min+1) + min) * int(time.Minute)
+
+	//	Set data in redis
+	_, err = models.RedisClient.Set(context.Background(), "personal_publish_"+address, string(jsonData), time.Duration(expirationTime)).Result()
+	if err != nil {
+		log.Fatal("Error while set newest book in redis: ", err.Error())
+	}
 }
 
 func (con QueryPersonalController) GetBookFile(ctx *gin.Context) {

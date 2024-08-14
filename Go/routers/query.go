@@ -3,7 +3,7 @@ package routers
 import (
 	"github.com/gin-gonic/gin"
 	"yisinnft.org/m/v2/controllers/query"
-	"yisinnft.org/m/v2/middlerwares"
+	"yisinnft.org/m/v2/middlewares"
 )
 
 func QueryNFTInit(r *gin.Engine) {
@@ -16,19 +16,19 @@ func QueryNFTInit(r *gin.Engine) {
 	queryBookApi := r.Group("/book")
 	{
 		queryBookApi.GET("/totalsupply", queryBookController.GetVarietyOfBook)
-		queryBookApi.GET("/:id", queryBookController.GetBookInformation)
+		queryBookApi.GET("/:id", middlewares.CacheBookMiddleware{}.BookInfoMiddleware, queryBookController.GetBookInformation)
 		queryBookApi.GET("/remain/:id", queryBookController.GetBookRemaining)
-		queryBookApi.GET("/page/:class", queryBookController.GetClassOfBooks)
-		queryBookApi.GET("/page/textbook/:grade", queryBookController.GetTextbookGrade)
-		queryBookApi.GET("/live", middlerwares.CacheMiddleware{}.LiveBookMiddleware, queryBookController.GetLiveBook)
-		queryBookApi.GET("/index/:class", middlerwares.CacheMiddleware{}.ClassBookMiddleware, queryBookController.GetClassOfTwentyBooksForIndex)
-		queryBookApi.GET("/index", middlerwares.CacheMiddleware{}.NewestBookMiddleware, queryBookController.GetNewestTwelveBookForIndex)
+		queryBookApi.GET("/page/:class", middlewares.CacheBookMiddleware{}.ClassOfBookMiddleware, queryBookController.GetClassOfBooks)
+		queryBookApi.GET("/page/textbook/:grade", middlewares.CacheBookMiddleware{}.TextbookGradeMiddleware, queryBookController.GetTextbookGrade)
+		queryBookApi.GET("/live", middlewares.CacheMiddleware{}.LiveBookMiddleware, queryBookController.GetLiveBook)
+		queryBookApi.GET("/index/:class", middlewares.CacheMiddleware{}.ClassBookMiddleware, queryBookController.GetClassOfTwentyBooksForIndex)
+		queryBookApi.GET("/index", middlewares.CacheMiddleware{}.NewestBookMiddleware, queryBookController.GetNewestTwelveBookForIndex)
 	}
 	queryPersonalApi := r.Group("/:address")
 	{
 		queryPersonalApi.GET("/endtime/:id", queryPersonalController.GetRentBookEndTime)
-		queryPersonalApi.GET("/rentedbook", queryPersonalController.GetPersonalRentedBook)
-		queryPersonalApi.GET("/publish", queryPersonalController.GetPersonalPublish)
+		queryPersonalApi.GET("/rentedbook", middlewares.CachePersonalMiddleware{}.PersonalRentedMiddleware, queryPersonalController.GetPersonalRentedBook)
+		queryPersonalApi.GET("/publish", middlewares.CachePersonalMiddleware{}.PersonalPublishMiddleware, queryPersonalController.GetPersonalPublish)
 		queryPersonalApi.GET("/:id/read", queryPersonalController.AddressHaveRentedBook)
 		queryPersonalApi.GET("/:id/:signature", queryPersonalController.VerifySignatureMiddleWare, queryPersonalController.CheckPermissionToAccessFileMiddleWare, queryPersonalController.GetBookFile)
 	}

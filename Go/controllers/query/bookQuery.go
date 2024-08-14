@@ -92,6 +92,28 @@ func (con QueryBookController) GetBookInformation(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"data": book,
 	})
+
+	//	Marshal data to json and store it in redis.
+	jsonData, err := json.Marshal(book)
+	if err != nil {
+		log.Fatal(err.Error())
+		return
+	}
+
+	//	Set local random source
+	source := rand.NewSource(time.Now().UnixNano())
+	rng := rand.New(source)
+	//	Set min and max minutes
+	min := 5
+	max := 10
+	//	Calculate expiration time
+	expirationTime := (rng.Intn(max-min+1) + min) * int(time.Minute)
+
+	//	Set data in redis
+	_, err = models.RedisClient.Set(context.Background(), "book_info_"+idstr, string(jsonData), time.Duration(expirationTime)).Result()
+	if err != nil {
+		log.Fatal("Error while set newest book in redis: ", err.Error())
+	}
 }
 
 func (con QueryBookController) GetBookRemaining(ctx *gin.Context) {
@@ -141,6 +163,27 @@ func (con QueryBookController) GetClassOfBooks(ctx *gin.Context) {
 		"data": results,
 	})
 
+	//	Marshal data to json and store it in redis.
+	jsonData, err := json.Marshal(results)
+	if err != nil {
+		log.Fatal(err.Error())
+		return
+	}
+
+	//	Set local random source
+	source := rand.NewSource(time.Now().UnixNano())
+	rng := rand.New(source)
+	//	Set min and max minutes
+	min := 5
+	max := 10
+	//	Calculate expiration time
+	expirationTime := (rng.Intn(max-min+1) + min) * int(time.Minute)
+
+	//	Set data in redis
+	_, err = models.RedisClient.Set(context.Background(), "book_"+class, string(jsonData), time.Duration(expirationTime)).Result()
+	if err != nil {
+		log.Fatal("Error while set newest book in redis: ", err.Error())
+	}
 }
 
 func (con QueryBookController) GetTextbookGrade(ctx *gin.Context) {
@@ -155,15 +198,15 @@ func (con QueryBookController) GetTextbookGrade(ctx *gin.Context) {
 
 	filter := bson.M{"class.grade": grade}
 
-	cur, err := collection.Find(context.TODO(), filter)
+	cur, err := collection.Find(context.Background(), filter)
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, err.Error())
 	}
-	defer cur.Close(context.TODO())
+	defer cur.Close(context.Background())
 
 	var results []Book
 
-	for cur.Next(context.TODO()) {
+	for cur.Next(context.Background()) {
 		var result Book
 		err := cur.Decode(&result)
 		if err != nil {
@@ -176,6 +219,28 @@ func (con QueryBookController) GetTextbookGrade(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{
 		"data": results,
 	})
+
+	//	Marshal data to json and store it in redis.
+	jsonData, err := json.Marshal(results)
+	if err != nil {
+		log.Fatal(err.Error())
+		return
+	}
+
+	//	Set local random source
+	source := rand.NewSource(time.Now().UnixNano())
+	rng := rand.New(source)
+	//	Set min and max minutes
+	min := 5
+	max := 10
+	//	Calculate expiration time
+	expirationTime := (rng.Intn(max-min+1) + min) * int(time.Minute)
+
+	//	Set data in redis
+	_, err = models.RedisClient.Set(context.Background(), "textbook_grade"+gradeStr, string(jsonData), time.Duration(expirationTime)).Result()
+	if err != nil {
+		log.Fatal("Error while set newest book in redis: ", err.Error())
+	}
 }
 
 func (con QueryBookController) GetClassOfTwentyBooksForIndex(ctx *gin.Context) {
@@ -189,12 +254,12 @@ func (con QueryBookController) GetClassOfTwentyBooksForIndex(ctx *gin.Context) {
 	findOptions.SetLimit(20)
 
 	var results []Book
-	cur, err := collection.Find(context.TODO(), bson.D{{}}, findOptions)
+	cur, err := collection.Find(context.Background(), bson.D{{}}, findOptions)
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, err.Error())
 	}
 
-	defer cur.Close(context.TODO())
+	defer cur.Close(context.Background())
 
 	for cur.Next(context.TODO()) {
 		var result Book
