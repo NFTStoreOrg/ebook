@@ -19,9 +19,9 @@ func QueryNFTInit(r *gin.Engine) {
 		queryBookApi.GET("/remain/:id", queryBookController.GetBookRemaining)
 		queryBookApi.GET("/page/:class", queryBookController.GetClassOfBooks)
 		queryBookApi.GET("/page/textbook/:grade", queryBookController.GetTextbookGrade)
-		queryBookApi.GET("/live", queryBookController.GetFromRedisLiveBook)
-		queryBookApi.GET("/index/:class", queryBookController.GetFromRedisTwentyBooksForIndex)
-		queryBookApi.GET("/index", queryBookController.GetFromRedisNewestBookForIndex)
+		queryBookApi.GET("/live", queryBookController.GetLiveBook)
+		queryBookApi.GET("/index/:class", queryBookController.GetClassOfTwentyBooksForIndex)
+		queryBookApi.GET("/index", queryBookController.GetNewestTwelveBookForIndex)
 	}
 	queryPersonalApi := r.Group("/:address")
 	{

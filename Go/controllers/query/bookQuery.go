@@ -2,21 +2,17 @@ package query
 
 import (
 	"context"
-	"encoding/json"
 	"math/big"
 	"net/http"
 	"sync"
-	"time"
 
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/redis/go-redis/v9"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	ebook "yisinnft.org/m/v2/contracts"
-	"yisinnft.org/m/v2/models"
 )
 
 type QueryBookController struct {
@@ -177,43 +173,8 @@ func (con QueryBookController) GetTextbookGrade(ctx *gin.Context) {
 	})
 }
 
-func (con QueryBookController) GetFromRedisTwentyBooksForIndex(ctx *gin.Context) {
+func (con QueryBookController) GetClassOfTwentyBooksForIndex(ctx *gin.Context) {
 	class := ctx.Param("class")
-	cacheKey := "index_" + class
-
-	data, err := models.RedisClient.Get(context.Background(), cacheKey).Result()
-
-	if err == redis.Nil {
-		var funcErr error
-		data, funcErr = con.GetClassOfTwentyBooksForIndex(class)
-		if funcErr != nil {
-			ctx.String(http.StatusInternalServerError, err.Error())
-			return
-		}
-
-		err = models.RedisClient.Set(context.Background(), cacheKey, data, 10*time.Minute).Err()
-		if err != nil {
-			ctx.String(http.StatusInternalServerError, err.Error())
-			return
-		}
-	} else if err != nil {
-		//	Error occur while get book info from redis
-		ctx.String(http.StatusInternalServerError, err.Error())
-	}
-
-	//	Unmarshal json file
-	var jsonData []map[string]interface{}
-	if err := json.Unmarshal([]byte(data), &jsonData); err != nil {
-		ctx.String(http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	ctx.JSON(http.StatusOK, gin.H{
-		"data": jsonData,
-	})
-}
-
-func (con QueryBookController) GetClassOfTwentyBooksForIndex(class string) (string, error) {
 
 	collection := con.DB.Database("ebook").Collection(class)
 
@@ -223,79 +184,38 @@ func (con QueryBookController) GetClassOfTwentyBooksForIndex(class string) (stri
 	findOptions.SetLimit(20)
 
 	var results []Book
-	cur, err := collection.Find(context.Background(), bson.D{{}}, findOptions)
+	cur, err := collection.Find(context.TODO(), bson.D{{}}, findOptions)
 	if err != nil {
-		return "", err
+		ctx.String(http.StatusInternalServerError, err.Error())
 	}
 
-	defer cur.Close(context.Background())
+	defer cur.Close(context.TODO())
 
-	for cur.Next(context.Background()) {
+	for cur.Next(context.TODO()) {
 		var result Book
 		err := cur.Decode(&result)
 		if err != nil {
-			return "", err
+			ctx.String(http.StatusInternalServerError, err.Error())
 		}
 		results = append(results, result)
 	}
 
-	jsonData, err := json.Marshal(results)
-	if err != nil {
-		return "", err
-	}
-
-	return string(jsonData), nil
-}
-
-func (con QueryBookController) GetFromRedisNewestBookForIndex(ctx *gin.Context) {
-	cacheKey := "newest_book"
-	//	Attempt to get from redis
-	data, err := models.RedisClient.Get(context.Background(), cacheKey).Result()
-
-	if err == redis.Nil {
-		//	Data not found
-		var funcErr error
-		data, funcErr = con.GetNewestTwelveBookForIndex()
-		if funcErr != nil {
-			ctx.String(http.StatusInternalServerError, err.Error())
-			return
-		}
-
-		//	Set info to redis
-		err = models.RedisClient.Set(context.Background(), cacheKey, data, 10*time.Minute).Err()
-		if err != nil {
-			ctx.String(http.StatusInternalServerError, err.Error())
-			return
-		}
-	} else if err != nil {
-		//	Error occur while get book info from redis
-		ctx.String(http.StatusInternalServerError, err.Error())
-	}
-
-	//	Unmarshal json file
-	var jsonData []map[string]interface{}
-	if err := json.Unmarshal([]byte(data), &jsonData); err != nil {
-		ctx.String(http.StatusInternalServerError, err.Error())
-		return
-	}
-
 	ctx.JSON(http.StatusOK, gin.H{
-		"data": jsonData,
+		"data": results,
 	})
 }
 
 // Get latest 12 books for index, use merge sort
-func (con QueryBookController) GetNewestTwelveBookForIndex() (string, error) {
+func (con QueryBookController) GetNewestTwelveBookForIndex(ctx *gin.Context) {
 	db := con.DB.Database("ebook")
-	collections, err := db.ListCollectionNames(context.Background(), bson.M{})
+	collections, err := db.ListCollectionNames(context.TODO(), bson.M{})
 	if err != nil {
-		return "", err
+		ctx.String(http.StatusInternalServerError, err.Error())
 	}
 
 	var wg sync.WaitGroup
 	booksChannel := make(chan []Book)
 	sortedBooksArray := make([][]Book, 0)
-	errChan := make(chan error)
 
 	//	Use a goroutine consuming books information in channel
 	go func() {
@@ -323,8 +243,7 @@ func (con QueryBookController) GetNewestTwelveBookForIndex() (string, error) {
 			for cur.Next(context.Background()) {
 				var book Book
 				if err := cur.Decode(&book); err != nil {
-					errChan <- err
-					return
+					ctx.String(http.StatusInternalServerError, err.Error())
 				}
 				results = append(results, book)
 			}
@@ -333,30 +252,18 @@ func (con QueryBookController) GetNewestTwelveBookForIndex() (string, error) {
 		}(collName)
 	}
 
-	go func() {
-		wg.Wait()
-		close(booksChannel)
-		close(errChan)
-	}()
+	wg.Wait()
+	close(booksChannel)
 
-	//	Handle results and errors
-	select {
-	case err := <-errChan:
-		return "", err
-	default:
-		result := mergeSortedArrays(sortedBooksArray)
+	result := mergeSortedArrays(sortedBooksArray)
 
-		if len(result) > 12 {
-			result = result[:12]
-		}
-
-		jsonData, err := json.Marshal(result)
-		if err != nil {
-			return "", err
-		}
-
-		return string(jsonData), nil
+	if len(result) > 12 {
+		result = result[:12]
 	}
+
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": result,
+	})
 }
 
 func mergeSortedArrays(sortedArrays [][]Book) []Book {
@@ -409,54 +316,16 @@ func merge(left, right []Book) []Book {
 	return result
 }
 
-func (con QueryBookController) GetFromRedisLiveBook(ctx *gin.Context) {
-	cacheKey := "live_book"
-	//	Attempt to get from redis
-	data, err := models.RedisClient.Get(context.Background(), cacheKey).Result()
-
-	if err == redis.Nil {
-		//	Data not found
-		var funcErr error
-		data, funcErr = con.GetLiveBook()
-		if funcErr != nil {
-			ctx.String(http.StatusInternalServerError, err.Error())
-			return
-		}
-
-		//	Set info to redis
-		err = models.RedisClient.Set(context.Background(), cacheKey, data, 10*time.Minute).Err()
-		if err != nil {
-			ctx.String(http.StatusInternalServerError, err.Error())
-			return
-		}
-	} else if err != nil {
-		//	Error occur while get book info from redis
-		ctx.String(http.StatusInternalServerError, err.Error())
-	}
-
-	//	Unmarshal json file
-	var jsonData []map[string]interface{}
-	if err := json.Unmarshal([]byte(data), &jsonData); err != nil {
-		ctx.String(http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	ctx.JSON(http.StatusOK, gin.H{
-		"data": jsonData,
-	})
-}
-
-func (con QueryBookController) GetLiveBook() (string, error) {
+func (con QueryBookController) GetLiveBook(ctx *gin.Context) {
 	db := con.DB.Database("ebook")
 	collections, err := db.ListCollectionNames(context.Background(), bson.M{})
 	if err != nil {
-		return "", err
+		ctx.String(http.StatusInternalServerError, err.Error())
 	}
 
 	var wg sync.WaitGroup
 	booksChannel := make(chan Book)
 	books := make([]Book, 0)
-	errChan := make(chan error)
 
 	go func() {
 		for book := range booksChannel {
@@ -478,29 +347,16 @@ func (con QueryBookController) GetLiveBook() (string, error) {
 			for cur.Next(context.Background()) {
 				var book Book
 				if err := cur.Decode(&book); err != nil {
-					errChan <- err
-					return
+					ctx.String(http.StatusInternalServerError, err.Error())
 				}
 				booksChannel <- book
 			}
 		}(collName)
 	}
+	wg.Wait()
+	close(booksChannel)
 
-	go func() {
-		wg.Wait()
-		close(booksChannel)
-		close(errChan)
-	}()
-
-	select {
-	case err := <-errChan:
-		return "", err
-	default:
-		jsonData, err := json.Marshal(books)
-		if err != nil {
-			return "", err
-		}
-
-		return string(jsonData), nil
-	}
+	ctx.JSON(http.StatusOK, gin.H{
+		"data": books,
+	})
 }
