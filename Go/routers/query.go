@@ -3,6 +3,7 @@ package routers
 import (
 	"github.com/gin-gonic/gin"
 	"yisinnft.org/m/v2/controllers/query"
+	"yisinnft.org/m/v2/middlerwares"
 )
 
 func QueryNFTInit(r *gin.Engine) {
@@ -19,9 +20,9 @@ func QueryNFTInit(r *gin.Engine) {
 		queryBookApi.GET("/remain/:id", queryBookController.GetBookRemaining)
 		queryBookApi.GET("/page/:class", queryBookController.GetClassOfBooks)
 		queryBookApi.GET("/page/textbook/:grade", queryBookController.GetTextbookGrade)
-		queryBookApi.GET("/live", queryBookController.GetLiveBook)
-		queryBookApi.GET("/index/:class", queryBookController.GetClassOfTwentyBooksForIndex)
-		queryBookApi.GET("/index", queryBookController.GetNewestTwelveBookForIndex)
+		queryBookApi.GET("/live", middlerwares.CacheMiddleware{}.LiveBookMiddleware, queryBookController.GetLiveBook)
+		queryBookApi.GET("/index/:class", middlerwares.CacheMiddleware{}.ClassBookMiddleware, queryBookController.GetClassOfTwentyBooksForIndex)
+		queryBookApi.GET("/index", middlerwares.CacheMiddleware{}.NewestBookMiddleware, queryBookController.GetNewestTwelveBookForIndex)
 	}
 	queryPersonalApi := r.Group("/:address")
 	{
