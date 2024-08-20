@@ -73,36 +73,74 @@
             </li>
         </ul>
 
-        <div id="default-tab-content" class="h-[80vh] bg-violet-300/25 fontfont-bold rounded-3xl content-center">
-            <div class="hidden p-4 rounded-lg h-full" id="profile" role="tabpanel">
-                <div class="grid grid-cols-5 h-full overflow-hidden">
-                    <div class="font-['YouSheBiaoTiHei'] self-center text-cyan-700 text-9xl flex-col mx-auto">
+        <div id="default-tab-content" class="h-[80vh] bg-violet-300/25 rounded-3xl content-center">
+            <div class="hidden p-4 rounded-lg" id="profile" role="tabpanel">
+                <div class="grid grid-cols-5 overflow-hidden">
+                    <div
+                        class="[text-shadow:_5px_5px_rgb(255_0_0_/_40%)] font-['YouSheBiaoTiHei'] self-center text-cyan-500 text-9xl flex-col mx-auto">
                         童<br>趣<br>
                         <button type="button"
-                            class="py-2.5 px-3 me-2 mb-2 text-sm font-medium bg-white hover:!bg-gray-100 text-gray-900 focus:outline-none rounded-full border border-gray-200 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100">Discover
+                            class="[box-shadow:_5px_5px_rgb(255_0_0_/_40%)] py-2.5 px-3 me-2 mb-2 text-sm font-medium bg-white hover:!bg-gray-100 text-gray-900 focus:outline-none rounded-full border border-gray-200 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100">Discover
                             <span aria-hidden="true">&rarr;</span></button>
                     </div>
 
                     <div class="col-span-4 self-center">
-                        <CardSlide title="" slideBgColor="" cardWidth1="h-[300px]"></CardSlide>
+                        <CardSlide title="" slideBgColor="" cardWidth1=""></CardSlide>
                     </div>
                 </div>
             </div>
             <div class="hidden p-4 rounded-lg" id="dashboard" role="tabpanel">
-                互動書
+                <div class="grid grid-cols-5 overflow-hidden">
+                    <div
+                        class="font-['MaokenAssortedSans'] self-center text-blue-600 [text-shadow:_5px_5px_rgb(129_140_248_/_40%)] [-webkit-text-stroke:_1px_white] text-8xl flex-col mx-auto">
+                        互動書<br>
+                        <button type="button"
+                            class="font-['YouSheBiaoTiHei'] [box-shadow:_5px_5px_rgb(129_140_248_/_40%)] [-webkit-text-stroke:0px] py-2.5 px-3 me-2 mb-2 text-sm font-medium bg-white hover:!bg-gray-100 text-gray-900 focus:outline-none rounded-full border border-gray-200 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100">Discover
+                            <span aria-hidden="true">&rarr;</span></button>
+                    </div>
+
+                    <div class="col-span-4 self-center">
+                        <CardSlide title="" slideBgColor="" cardWidth1=""></CardSlide>
+                    </div>
+                </div>
+
             </div>
             <div class="hidden p-4 rounded-lg" id="dashboar" role="tabpanel">
-                影片
+                <div class="grid grid-cols-5 overflow-hidden">
+                    <div
+                        class="font-['BoutiqueBitmap7x7_1.6'] self-center text-gray-950	[text-shadow:_5px_5px_rgb(129_140_248_/_40%)] [-webkit-text-stroke:_1px_white] text-8xl flex-col mx-auto">
+                        影<br>片<br>
+                        <button type="button"
+                            class="font-['YouSheBiaoTiHei'] [box-shadow:_5px_5px_rgb(129_140_248_/_40%)] [-webkit-text-stroke:0px] py-2.5 px-3 me-2 mb-2 text-sm font-medium bg-white hover:!bg-gray-100 text-gray-900 focus:outline-none rounded-full border border-gray-200 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100">Discover
+                            <span aria-hidden="true">&rarr;</span></button>
+                    </div>
+
+                    <div class="col-span-4 self-center">
+                        <CardSlide title="" slideBgColor="" cardWidth1=""></CardSlide>
+                    </div>
+                </div>
             </div>
             <div class="hidden p-4 rounded-lg" id="dashboa" role="tabpanel">
-                其他
+                <div class="grid grid-cols-5 overflow-hidden">
+                    <div
+                        class="font-['LogoSC_LongZhuTi'] self-center text-blue-700 [text-shadow:_5px_5px_rgb(129_140_248_/_40%)] text-8xl flex-col mx-auto">
+                        其<br>他<br>
+                        <button type="button"
+                            class="font-['YouSheBiaoTiHei'] [box-shadow:_5px_5px_rgb(129_140_248_/_40%)] [-webkit-text-stroke:0px] py-2.5 px-3 me-2 mb-2 text-sm font-medium bg-white hover:!bg-gray-100 text-gray-900 focus:outline-none rounded-full border border-gray-200 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100">Discover
+                            <span aria-hidden="true">&rarr;</span></button>
+                    </div>
+
+                    <div class="col-span-4 self-center">
+                        <CardSlide title="" slideBgColor="" cardWidth1=""></CardSlide>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts" name="Main">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import Card from '../components/Card.vue'
 import CardSlide from '../components/CardSlide.vue'
 const ebook = ref()
@@ -131,6 +169,43 @@ function handleScroll() {
     //     ebookElement.style.animationPlayState = 'paused';
     // }
 
+}
+const content = ref()
+const leftArrow = ref(true)
+const rightArrow = ref(true)
+onMounted(() => {
+    if (content.value instanceof HTMLElement) {
+        const clientWidth = content.value.clientWidth
+        const maxScrollWidth = content.value.scrollWidth
+        if (maxScrollWidth <= clientWidth) {
+            rightArrow.value = false
+        }
+    }
+});
+
+function slideR() {
+    leftArrow.value = true
+    const clientWidth = content.value.clientWidth
+    const maxScrollWidth = content.value.scrollWidth
+    console.log(clientWidth, maxScrollWidth, content.value.scrollLeft)
+    if ((maxScrollWidth - content.value.scrollLeft) - clientWidth <= clientWidth) {
+        content.value.scrollLeft = (maxScrollWidth - clientWidth)
+        rightArrow.value = false
+
+    } else {
+        content.value.scrollLeft += clientWidth
+    }
+}
+function slideL() {
+    rightArrow.value = true
+    const clientWidth = content.value.clientWidth
+    console.log(clientWidth, content.value.scrollLeft)
+    if (content.value.scrollLeft < clientWidth) {
+        leftArrow.value = false
+        content.value.scrollLeft = 0
+    } else {
+        content.value.scrollLeft -= clientWidth
+    }
 }
 </script>
 <style scoped>

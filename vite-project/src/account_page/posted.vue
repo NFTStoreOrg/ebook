@@ -36,7 +36,7 @@
 
         已發佈
         <div class="grid grid-cols-1 gap-8 mt-3 lg:grid-cols-4 md:grid-cols-3 xl:grid-cols-6 mx-auto">
-            <card></card>
+            <card cardWidth2=""></card>
         </div>
         <!-- upload modal -->
         <teleport to="body">
