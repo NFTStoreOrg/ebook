@@ -37,7 +37,7 @@
     <!-- section3 -->
     <CardSlide title="教科書" slideBgColor="bg-orange-200" cardWidth1="w-[150px]" :cardStore=cardStore.textbook></CardSlide>
     <CardSlide title="參考書" slideBgColor="bg-red-100" cardWidth1="w-[150px]" :cardStore=cardStore.referenceBook></CardSlide>
-    
+
     <div class="container min-w-[95%] mb-8 mt-14">
 
         <ul class="flex flex-wrap text-sm font-medium text-center text-lg" id="default-tab"
@@ -70,7 +70,7 @@
                     </div>
 
                     <div class="col-span-4 self-center">
-                        <CardSlide title="" slideBgColor="" cardWidth1=""></CardSlide>
+                        <CardSlide title="" slideBgColor="" cardWidth1="" :cardStore=cardStore.childrenBook></CardSlide>
                     </div>
                 </div>
             </div>
@@ -85,7 +85,7 @@
                     </div>
 
                     <div class="col-span-4 self-center">
-                        <CardSlide title="" slideBgColor="" cardWidth1=""></CardSlide>
+                        <CardSlide title="" slideBgColor="" cardWidth1="" :cardStore=cardStore.textbook></CardSlide>
                     </div>
                 </div>
 
@@ -101,7 +101,7 @@
                     </div>
 
                     <div class="col-span-4 self-center">
-                        <CardSlide title="" slideBgColor="" cardWidth1=""></CardSlide>
+                        <CardSlide title="" slideBgColor="" cardWidth1="" :cardStore=cardStore.video></CardSlide>
                     </div>
                 </div>
             </div>
@@ -116,7 +116,7 @@
                     </div>
 
                     <div class="col-span-4 self-center">
-                        <CardSlide title="" slideBgColor="" cardWidth1=""></CardSlide>
+                        <CardSlide title="" slideBgColor="" cardWidth1="" :cardStore=cardStore.otherBook></CardSlide>
                     </div>
                 </div>
             </div>
