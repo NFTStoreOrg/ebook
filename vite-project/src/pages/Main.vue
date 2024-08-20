@@ -40,31 +40,119 @@
     <div class="container h-[80vh] min-w-[95%] bg-violet-300/25 rounded-3xl text-9xl content-center fontfont-bold">
 
         <div class="flex">
-            <div>E</div>
+            <div :style="ebook" id="ebook" style="">E</div>
             <div>B</div>
             <div>O</div>
             <div>O</div>
             <div>K</div>
         </div>
         <div>STORE</div>
-    </div>
-    <CardSlide title="兒童書籍" slideBgColor="bg-sky-200" cardWidth1="w-[150px]" :cardStore=cardStore.childrenBook></CardSlide>
-    <CardSlide title="互動書" slideBgColor="bg-violet-100" cardWidth1="w-[150px]" :cardStore=cardStore.live></CardSlide>
-    <CardSlide title="影片" slideBgColor="bg-violet-100" cardWidth1="w-[150px]" :cardStore=cardStore.video></CardSlide>
-    <CardSlide title="其他" slideBgColor="bg-violet-100" cardWidth1="w-[150px]" :cardStore=cardStore.otherBook></CardSlide>
+    </div> -->
+    <!-- <CardSlide title="兒童書籍" slideBgColor="bg-sky-200" cardWidth1="w-[150px]"></CardSlide>
+    <CardSlide title="互動書" slideBgColor="bg-violet-100" cardWidth1="w-[150px]"></CardSlide>
+    <CardSlide title="影片" slideBgColor="bg-violet-100" cardWidth1="w-[150px]"></CardSlide>
+    <CardSlide title="其他" slideBgColor="bg-violet-100" cardWidth1="w-[150px]"></CardSlide> -->
 
+
+    <div class="container min-w-[95%] mb-8 mt-14">
+
+        <ul class="flex flex-wrap text-sm font-medium text-center text-lg" id="default-tab"
+            data-tabs-active-classes="bg-purple-600 text-white border-purple-600 rounded"
+            data-tabs-inactive-classes="text-gray-500 hover:text-gray-600 border-gray-100 hover:border-gray-300"
+            data-tabs-toggle="#default-tab-content" role="tab">
+            <li>
+                <button id="profile-tab" data-tabs-target="#profile" type="button" role="tab">兒童書籍</button>
+            </li>
+            <li>
+                <button id="dashboard-tab" data-tabs-target="#dashboard" type="button" role="tab">互動書</button>
+            </li>
+            <li>
+                <button id="dashboard-tab" data-tabs-target="#dashboar" type="button" role="tab">影片</button>
+            </li>
+            <li>
+                <button id="dashboard-tab" data-tabs-target="#dashboa" type="button" role="tab">其他</button>
+            </li>
+        </ul>
+
+        <div id="default-tab-content" class="h-[80vh] bg-violet-300/25 rounded-3xl content-center">
+            <div class="hidden p-4 rounded-lg" id="profile" role="tabpanel">
+                <div class="grid grid-cols-5 overflow-hidden">
+                    <div
+                        class="[text-shadow:_5px_5px_rgb(255_0_0_/_40%)] font-['YouSheBiaoTiHei'] self-center text-cyan-500 text-9xl flex-col mx-auto">
+                        童<br>趣<br>
+                        <button type="button"
+                            class="[box-shadow:_5px_5px_rgb(255_0_0_/_40%)] py-2.5 px-3 me-2 mb-2 text-sm font-medium bg-white hover:!bg-gray-100 text-gray-900 focus:outline-none rounded-full border border-gray-200 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100">Discover
+                            <span aria-hidden="true">&rarr;</span></button>
+                    </div>
+
+                    <div class="col-span-4 self-center">
+                        <CardSlide title="" slideBgColor="" cardWidth1=""></CardSlide>
+                    </div>
+                </div>
+            </div>
+            <div class="hidden p-4 rounded-lg" id="dashboard" role="tabpanel">
+                <div class="grid grid-cols-5 overflow-hidden">
+                    <div
+                        class="font-['MaokenAssortedSans'] self-center text-blue-600 [text-shadow:_5px_5px_rgb(129_140_248_/_40%)] [-webkit-text-stroke:_1px_white] text-8xl flex-col mx-auto">
+                        互動書<br>
+                        <button type="button"
+                            class="font-['YouSheBiaoTiHei'] [box-shadow:_5px_5px_rgb(129_140_248_/_40%)] [-webkit-text-stroke:0px] py-2.5 px-3 me-2 mb-2 text-sm font-medium bg-white hover:!bg-gray-100 text-gray-900 focus:outline-none rounded-full border border-gray-200 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100">Discover
+                            <span aria-hidden="true">&rarr;</span></button>
+                    </div>
+
+                    <div class="col-span-4 self-center">
+                        <CardSlide title="" slideBgColor="" cardWidth1=""></CardSlide>
+                    </div>
+                </div>
+
+            </div>
+            <div class="hidden p-4 rounded-lg" id="dashboar" role="tabpanel">
+                <div class="grid grid-cols-5 overflow-hidden">
+                    <div
+                        class="font-['BoutiqueBitmap7x7_1.6'] self-center text-gray-950	[text-shadow:_5px_5px_rgb(129_140_248_/_40%)] [-webkit-text-stroke:_1px_white] text-8xl flex-col mx-auto">
+                        影<br>片<br>
+                        <button type="button"
+                            class="font-['YouSheBiaoTiHei'] [box-shadow:_5px_5px_rgb(129_140_248_/_40%)] [-webkit-text-stroke:0px] py-2.5 px-3 me-2 mb-2 text-sm font-medium bg-white hover:!bg-gray-100 text-gray-900 focus:outline-none rounded-full border border-gray-200 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100">Discover
+                            <span aria-hidden="true">&rarr;</span></button>
+                    </div>
+
+                    <div class="col-span-4 self-center">
+                        <CardSlide title="" slideBgColor="" cardWidth1=""></CardSlide>
+                    </div>
+                </div>
+            </div>
+            <div class="hidden p-4 rounded-lg" id="dashboa" role="tabpanel">
+                <div class="grid grid-cols-5 overflow-hidden">
+                    <div
+                        class="font-['LogoSC_LongZhuTi'] self-center text-blue-700 [text-shadow:_5px_5px_rgb(129_140_248_/_40%)] text-8xl flex-col mx-auto">
+                        其<br>他<br>
+                        <button type="button"
+                            class="font-['YouSheBiaoTiHei'] [box-shadow:_5px_5px_rgb(129_140_248_/_40%)] [-webkit-text-stroke:0px] py-2.5 px-3 me-2 mb-2 text-sm font-medium bg-white hover:!bg-gray-100 text-gray-900 focus:outline-none rounded-full border border-gray-200 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100">Discover
+                            <span aria-hidden="true">&rarr;</span></button>
+                    </div>
+
+                    <div class="col-span-4 self-center">
+                        <CardSlide title="" slideBgColor="" cardWidth1=""></CardSlide>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </template>
 
 <script setup lang="ts" name="Main">
-// import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import Card from '../components/Card.vue'
 import CardSlide from '../components/CardSlide.vue'
 import { useCardStore } from '../store/card'
 window.addEventListener("scroll", handleScroll);
 function handleScroll() {
-    if (window.scrollY >= 200) {
+    // console.log(window.scrollY)
 
+    const ebookElement = document.getElementById('ebook') as HTMLElement;
 
+    if (window.scrollY >= 3516) {
+        // ebook.value = "transform: translate(50px, -100px);"
     }
 
     else {
@@ -96,6 +184,23 @@ cardStore.getLiveBook()
 
     100% {
         transform: translatex(-100%)
+    }
+}
+
+#ebook {
+    animation: text-reveal 1s linear infinite;
+    animation-play-state: paused;
+    animation-delay: calc(var(--scroll) * -1s);
+    animation-fill-mode: both;
+}
+
+@keyframes text-reveal {
+    /* 0% {
+       transform: translate(0px, 0px); 
+    } */
+
+    to {
+        transform: translate(50px, -100px);
     }
 }
 </style>
