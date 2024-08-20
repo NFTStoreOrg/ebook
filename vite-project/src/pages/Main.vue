@@ -93,7 +93,7 @@
             <div class="hidden p-4 rounded-lg" id="dashboar" role="tabpanel">
                 <div class="grid grid-cols-5 overflow-hidden">
                     <div
-                        class="font-['BoutiqueBitmap7x7_1.6'] self-center text-gray-950	[text-shadow:_5px_5px_rgb(129_140_248_/_40%)] [-webkit-text-stroke:_1px_white] text-8xl flex-col mx-auto">
+                        class="font-['YouSheBiaoTiHei'] self-center text-gray-950 [text-shadow:_5px_5px_rgb(129_140_248_/_40%)] [-webkit-text-stroke:_1px_white] text-9xl flex-col mx-auto">
                         影<br>片<br>
                         <button type="button"
                             class="font-['YouSheBiaoTiHei'] [box-shadow:_5px_5px_rgb(129_140_248_/_40%)] [-webkit-text-stroke:0px] py-2.5 px-3 me-2 mb-2 text-sm font-medium bg-white hover:!bg-gray-100 text-gray-900 focus:outline-none rounded-full border border-gray-200 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100">Discover
@@ -108,7 +108,7 @@
             <div class="hidden p-4 rounded-lg" id="dashboa" role="tabpanel">
                 <div class="grid grid-cols-5 overflow-hidden">
                     <div
-                        class="font-['LogoSC_LongZhuTi'] self-center text-blue-700 [text-shadow:_5px_5px_rgb(129_140_248_/_40%)] text-8xl flex-col mx-auto">
+                        class="font-['YouSheBiaoTiHei'] self-center text-blue-700 [text-shadow:_5px_5px_rgb(129_140_248_/_40%)] text-9xl flex-col mx-auto">
                         其<br>他<br>
                         <button type="button"
                             class="font-['YouSheBiaoTiHei'] [box-shadow:_5px_5px_rgb(129_140_248_/_40%)] [-webkit-text-stroke:0px] py-2.5 px-3 me-2 mb-2 text-sm font-medium bg-white hover:!bg-gray-100 text-gray-900 focus:outline-none rounded-full border border-gray-200 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100">Discover
